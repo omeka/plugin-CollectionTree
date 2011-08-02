@@ -93,7 +93,7 @@ function nested_show($collection){
   $rel = ($n->relationship($id));
 
    if($rel['child']){
-       echo '<div id="parent_info"><h2>Parent</h2></div>';
+       echo '<div id="parent_info"><h2>Root Collection</h2></div>';
         $parent = $n->getParent($id);
         $html = '<span class="view-public-page">'
          .'<a href="'.html_escape(public_uri('admin/collections/show/'.$parent['id'])).'">'
@@ -101,7 +101,7 @@ function nested_show($collection){
   
         echo $html;
    }elseif($rel['parent']){
-       echo '<div id="parent_info"><h2>Children</h2></div>';
+       echo '<div id="parent_info"><h2>Subcollections</h2></div>';
        $chld = $n->getCollectionsChildren($id);
      
        foreach($chld as $key=>$value){
