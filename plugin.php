@@ -127,7 +127,7 @@ function nested_collection_browse_sql($select, $params){
     $db = get_db();
     // Here we ommit all of the collections that are children of another
    if(!is_admin_theme()){
-     $select->where("c.id NOT IN ( SELECT n.child FROM `{$db-Nest}` as n) ");
+     $select->where("c.id NOT IN ( SELECT n.child FROM `{$db->Nest}` as n) ");
    }
 }
 
