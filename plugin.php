@@ -26,7 +26,7 @@ add_plugin_hook('public_append_to_collections_show', 'nested_collections_show');
  */
 function nested_install(){
   $db = get_db();
- $sql  = "CREATE TABLE IF NOT EXISTS `{$db->prefix}nests`( "
+ $sql  = "CREATE TABLE IF NOT EXISTS `{$db->Nest}`( "
         ."`id` int(10) unsigned NOT NULL auto_increment,"
         ."`child` INT NOT NULL, "
         ."`parent` INT NOT NULL,"        
@@ -40,7 +40,7 @@ function nested_install(){
  */
 function nested_uninstall(){
   $db = get_db();
-  $sql = "DROP TABLE IF EXISTS `{$db->prefix}Nest`";
+  $sql = "DROP TABLE IF EXISTS `{$db->Nest}`";
   $db->query($sql);
 }
 
@@ -125,9 +125,10 @@ function nested_show($collection){
 
 function nested_collection_browse_sql($select, $params){
     $db = get_db();
-    // Here we ommit all of the collections that are childred of another
-   $select->where('c.id NOT IN ( SELECT n.child FROM `{$db-prefix}nests` as n) ');
-  
+    // Here we ommit all of the collections that are children of another
+   if(!is_admin_theme()){
+     $select->where("c.id NOT IN ( SELECT n.child FROM `{$db-Nest}` as n) ");
+   }
 }
 
 /**
