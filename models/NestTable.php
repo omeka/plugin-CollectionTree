@@ -94,10 +94,10 @@ class NestTable extends Omeka_Db_Table{
      $db = get_db();
      if($parent != ''){
         $db->insert('Nest',array('parent'=>$parent,'child'=>$child));   	
-     } else {
+     } elseif($child !=''){} else{
+
 	$sql = "DELETE FROM $db->Nest WHERE `child` = $child";
-   
-     $db->exec($sql);
+        $db->exec($sql);
      }
   }
 
