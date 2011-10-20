@@ -146,26 +146,44 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function adminAppendToCollectionsShowPrimary($collection)
     {
-        // Show this collection's parent collection.
-        $parent = $this->_db->getTable('NestedCollection')
-                            ->fetchParent($collection->id);
-        
-        // Show this collection's child collections.
-        $children = $this->_db->getTable('NestedCollection')
-                              ->fetchChildren($collection->id);
+        $this->_appendToCollectionsShow($collection);
     }
     
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function publicAppendToCollectionsShow($collection)
+    public function publicAppendToCollectionsShow()
     {
-        // Show this collection's parent collection.
+        $this->_appendToCollectionsShow(get_current_collection());
+    }
+    
+    protected function _appendToCollectionsShow($collection)
+    {
         $parent = $this->_db->getTable('NestedCollection')
                             ->fetchParent($collection->id);
-        
-        // Show this collection's child collections.
         $children = $this->_db->getTable('NestedCollection')
                               ->fetchChildren($collection->id);
+                              
+?>
+<h2>Parent Collection</h2>
+<?php if ($parent): ?>
+<ul>
+    <li><?php echo link_to_collection(null, array(), 'show', $this->_db->getTable('Collection')->find($parent['id'])); ?></li>
+</ul>
+<?php else: ?>
+<p>No parent collection.</p>
+<?php endif; ?>
+
+<h2>Child Collections</h2>
+<?php if ($children): ?>
+<ul>
+    <?php foreach ($children as $child): ?>
+    <li><?php echo link_to_collection(null, array(), 'show', $this->_db->getTable('Collection')->find($child['id'])); ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php else: ?>
+<p>No child collections.</p>
+<?php endif; ?>
+<?php
     }
 }
