@@ -8,8 +8,8 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         'after_save_form_record', 
         'collection_browse_sql', 
         'admin_append_to_collections_form', 
-        //'admin_append_to_collections_show_primary', 
-        //'public_append_to_collections_show',
+        'admin_append_to_collections_show_primary', 
+        'public_append_to_collections_show',
     );
     
     /**
@@ -141,52 +141,31 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
 <?php
     }
     
-    /*
+    /**
+     * Display the collection's parent collection and child collections.
+     */
     public function adminAppendToCollectionsShowPrimary($collection)
     {
-        $n = get_db()->getTable('Nest');
-        $id = $collection['id'];
-        $rel = ($n->relationship($id));
-        if ($rel['child']) {
-            echo '<div id="parent_info"><h2>Root Collection</h2></div>';
-            $parent = $n->getParent($id);
-            $html = '<span class="view-public-page">'
-            .'<a href="'.html_escape(public_uri('admin/collections/show/'.$parent['id'])).'">'
-            .$parent['name'].'</a></span>';
-            echo $html;
-        } else if ($rel['parent']) {
-            echo '<div id="parent_info"><h2>Subcollections</h2></div>';
-            $chld = $n->getCollectionsChildren($id);
-            foreach ($chld as $key=>$value) {
-                $html = '<span class="view-public-page">'
-                .'<a href="'.html_escape(public_uri('admin/collections/show/'.$key)).'">'
-                .$value.'</a></span><br><br>';
-                echo $html;
-            }
-        }
+        // Show this collection's parent collection.
+        $parent = $this->_db->getTable('NestedCollection')
+                            ->fetchParent($collection->id);
+        
+        // Show this collection's child collections.
+        $children = $this->_db->getTable('NestedCollection')
+                              ->fetchChildren($collection->id);
     }
     
-    public function publicAppendToCollectionsShow($collection = null)
+    /**
+     * Display the collection's parent collection and child collections.
+     */
+    public function publicAppendToCollectionsShow($collection)
     {
-        if (!$collection) {
-            $coll = get_current_collection();
-            $nst = get_db()->getTable('Nest');
-            $chld = $nst->getCollectionsChildren($coll['id']);
-            if (count($chld) != 0) {
-                foreach ($chld as $key => $value) {
-                    $html = '<span class="collections-children-page">'
-                    .'<h2><a href="'.html_escape(public_uri('collections/show/'.$key)).'">'
-                    .$value.'</a></h2></span><br><br>';
-                    echo $html;
-                }
-            } else {
-                $parent = $nst->getParent($coll['id']);
-                $html = '<span class="collections-parent-page">'
-                .'<h2><a href="'.html_escape(public_uri('collections/show/'.$parent['id'])).'">'
-                .$parent['name'].'</a></h2></span><br><br>';
-                echo $html;
-            }
-        }
+        // Show this collection's parent collection.
+        $parent = $this->_db->getTable('NestedCollection')
+                            ->fetchParent($collection->id);
+        
+        // Show this collection's child collections.
+        $children = $this->_db->getTable('NestedCollection')
+                              ->fetchChildren($collection->id);
     }
-    */
 }

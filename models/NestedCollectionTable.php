@@ -28,7 +28,7 @@ class NestedCollectionTable extends Omeka_Db_Table
     }
     
     /**
-     * Find NestedCollection by child collection ID.
+     * Find parent/child relationship by child collection ID.
      * 
      * @param int $childCollectionId
      * @return Omeka_Record
@@ -47,67 +47,42 @@ class NestedCollectionTable extends Omeka_Db_Table
     }
     
     /**
-     * Find NestedCollections by parent collection ID.
+     * Fetch the children of the specified collection.
      * 
-     * @param int $parentCollectionId
-     * @return array An array of {@link Omeka_Record}s
+     * @param int $collectionId
+     * @return array
      */
-    public function findByParentCollectionId($parentCollectionId)
+    public function fetchChildren($collectionId)
     {
         $db = $this->getDb();
         
         $sql = "
-        SELECT * 
-        FROM {$db->NestedCollection} 
-        WHERE parent_collection_id = ?";
+        SELECT c.* 
+        FROM {$db->Collection} c 
+        JOIN {$db->NestedCollection} nc 
+        ON c.id = nc.child_collection_id 
+        WHERE nc.parent_collection_id = ?";
         
-        // Parent collection IDs are not unique, so fetch all rows.
-        return $this->fetchObjects($sql, array($parentCollectionId));
+        return $this->fetchAll($sql, $collectionId);
     }
     
-    /*
-    public function getCollectionsChildren($parent)
+    /**
+     * Fetch the parent of the specified collection.
+     * 
+     * @param int $collectionId
+     * @return array
+     */
+    public function fetchParent($collectionId)
     {
         $db = $this->getDb();
-        $select = $this->getSelect()
-                       ->joinInner(array('co'=>$db->Collection), 'co.id = n.child')
-                       ->where('n.parent = ?',$parent);
-        $result = $this->fetchObjects($select);
-        foreach ($result as $k) {
-            $res[$k['child']]=$k['name'];
-        }
-        return $res;
+        
+        $sql = "
+        SELECT c.* 
+        FROM {$db->Collection} c 
+        JOIN {$db->NestedCollection} nc 
+        ON c.id = nc.parent_collection_id 
+        WHERE nc.child_collection_id = ?";
+        
+        return $this->fetchRow($sql, $collectionId);
     }
-    
-    public function relationship($id)
-    {
-        $db = $this->getDb();
-        $select = $this->getSelect()->where('n.parent = ? OR n.child = ?',$id);
-        $result = $this->fetchObjects($select);
-        $relation = array('parent'=>FALSE,'child'=>FALSE);
-        foreach ($result as $relation) {
-            if ($relation['parent'] == $id) {
-                return array('parent'=>TRUE);
-            } else if ($relation['child'] == $id) {
-                return array('child'=>TRUE);
-            }
-        }
-    }
-    
-    public function getParent($child)
-    {
-        $db = $this->getDb();
-        $select = $this->getSelect()
-                       ->joinInner(array('c'=>$db->Collection), 
-                                   'c.id = n.parent', 
-                                   array('c.id as collection_id','c.name as name'))
-                       ->where('n.child = ?', $child);
-        $res = $this->fetchObjects($select);
-        foreach ($res as $r) {
-            $re['id'] = $r['collection_id'];
-            $re['name'] = $r['name'];
-        }
-        return $re;
-    }
-    */
 }
