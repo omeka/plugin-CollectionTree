@@ -1,22 +1,71 @@
 <?php
+/**
+ * One collection can have at most one parent collection. One collection can 
+ * have zero or more child collections. CHILD_COLLECTION_ID MUST BE UNIQUE
+ */
 class NestedCollectionTable extends Omeka_Db_Table
 {
-    public function get_collections($id = null)
+    /**
+     * Fetch all collections that can be assigned as a parent collection to the 
+     * specified collection.
+     * 
+     * @param null|int $collectionId
+     * @return array An array of collection rows.
+     */
+    public function fetchAssignableParentCollections($collectionId)
     {
-        $n_table = $this->findAll();
-        foreach ($n_table as $n) {
-            $nest[$n->child] = $n->child;
-        }
-        $db = get_db()->getTable('Collection')->findAll();
-        $res = array(''=>'Select from below');
-        foreach ($db as $c) {
-            if (($c->id != $id) && !isset($nest[$c->id])) {
-                $res[$c->id] = $c->name;
-            }
-        }
-        return $res;
+        $db = $this->getDb();
+        
+        // Must cast null collection ID to 0 to properly bind.
+        $collectionId = (int) $collectionId;
+        
+        $sql = "
+        SELECT * 
+        FROM {$db->Collection} 
+        WHERE id != ?";
+        
+        return $db->fetchAll($sql, array($collectionId));
     }
     
+    /**
+     * Find NestedCollection by child collection ID.
+     * 
+     * @param int $childCollectionId
+     * @return Omeka_Record
+     */
+    public function findByChildCollectionId($childCollectionId)
+    {
+        $db = $this->getDb();
+        
+        $sql = "
+        SELECT * 
+        FROM {$db->NestedCollection} 
+        WHERE child_collection_id = ?";
+        
+        // Child collection IDs are unique, so only fetch one row.
+        return $this->fetchObject($sql, array($childCollectionId));
+    }
+    
+    /**
+     * Find NestedCollections by parent collection ID.
+     * 
+     * @param int $parentCollectionId
+     * @return array An array of {@link Omeka_Record}s
+     */
+    public function findByParentCollectionId($parentCollectionId)
+    {
+        $db = $this->getDb();
+        
+        $sql = "
+        SELECT * 
+        FROM {$db->NestedCollection} 
+        WHERE parent_collection_id = ?";
+        
+        // Parent collection IDs are not unique, so fetch all rows.
+        return $this->fetchObjects($sql, array($parentCollectionId));
+    }
+    
+    /*
     public function getCollectionsChildren($parent)
     {
         $db = $this->getDb();
@@ -45,19 +94,6 @@ class NestedCollectionTable extends Omeka_Db_Table
         }
     }
     
-    public function insert_parent($parent,$child)
-    {
-        $db = get_db();
-        if ($parent != '') {
-            $db->insert('Nest',array('parent'=>$parent,'child'=>$child));
-        } else if ($child !='') {
-            
-        } else {
-            $sql = "DELETE FROM $db->Nest WHERE `child` = $child";
-            $db->exec($sql);
-        }
-    }
-    
     public function getParent($child)
     {
         $db = $this->getDb();
@@ -73,4 +109,5 @@ class NestedCollectionTable extends Omeka_Db_Table
         }
         return $re;
     }
+    */
 }
