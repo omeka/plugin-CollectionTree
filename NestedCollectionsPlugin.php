@@ -9,11 +9,15 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         'collection_browse_sql', 
         'admin_append_to_collections_form', 
         'admin_append_to_collections_show_primary', 
-        'public_append_to_collections_show',
+        'public_append_to_collections_show', 
+        'admin_append_to_items_form_collection', 
     );
     
     /**
      * Install the plugin.
+     * 
+     * One collection can have AT MOST ONE parent collection. One collection can 
+     * have ZERO OR MORE child collections.
      * 
      * A limited release version (v0.1, named "Nested") of this plugin may still 
      * be used by a handful of early adopters. Because of the plugin name 
@@ -23,6 +27,8 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function install()
     {
+        // child_collection_id must be unique to satisfy the AT MOST ONE parent 
+        // collection constraint.
         $sql  = "
         CREATE TABLE IF NOT EXISTS {$this->_db->NestedCollection} (
             id int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -185,5 +191,40 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
 <p>No child collections.</p>
 <?php endif; ?>
 <?php
+    }
+    
+    /**
+     * Display the collection tree.
+     */
+    public function adminAppendToItemsFormCollection($item)
+    {
+        $collectionHierarchy = $this->_db->getTable('NestedCollection')->fetchCollectionHierarchy();
+?>
+<h2>Collection Hierarchy</h2>
+<?php echo self::buildCollectionHierarchyList($collectionHierarchy); ?>
+<?php
+    }
+    
+    /**
+     * Recursive method that returns the collection hierarchy as an unordered 
+     * list.
+     * 
+     * @see NestedCollectionTable::fetchCollectionHierarchy()
+     * @param array $collectionHierarchy
+     * @return string
+     */
+    public static function buildCollectionHierarchyList($collectionHierarchy)
+    {
+        if (!$collectionHierarchy) {
+            return;
+        }
+        $html = '<ul>';
+        foreach ($collectionHierarchy as $collection) {
+            $html .= '<li>' . $collection['name'];
+            $html .= self::buildCollectionHierarchyList($collection['children']);
+            $html .= '</li>';
+        }
+        $html .= '</ul>';
+        return $html;
     }
 }

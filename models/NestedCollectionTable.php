@@ -1,8 +1,4 @@
 <?php
-/**
- * One collection can have at most one parent collection. One collection can 
- * have zero or more child collections. CHILD_COLLECTION_ID MUST BE UNIQUE
- */
 class NestedCollectionTable extends Omeka_Db_Table
 {
     /**
@@ -84,5 +80,49 @@ class NestedCollectionTable extends Omeka_Db_Table
         WHERE nc.child_collection_id = ?";
         
         return $this->fetchRow($sql, $collectionId);
+    }
+    
+    /**
+     * Recursive method that returns all child collections of the specified 
+     * collection, or the entire collection hierarchy.
+     * 
+     * @param int|null $parentCollectionId
+     * @return array
+     */
+    public function fetchCollectionHierarchy($parentCollectionId = null)
+    {
+        $db = $this->getDb();
+        $collectionHierarchy = array();
+        
+        // Select all child collections.
+        if ($parentCollectionId) {
+            $sql = "
+            SELECT c.* 
+            FROM {$db->NestedCollection} nc 
+            JOIN {$db->Collection} c 
+            ON nc.child_collection_id = c.id 
+            WHERE nc.parent_collection_id = ?";
+            $children = $db->fetchAll($sql, array($parentCollectionId));
+        
+        // Select all top-level collections.
+        } else {
+            $sql = "
+            SELECT c.* 
+            FROM {$db->Collection} c 
+            LEFT JOIN {$db->NestedCollection} nc 
+            ON nc.child_collection_id = c.id 
+            WHERE nc.child_collection_id IS NULL";
+            $children = $db->fetchAll($sql);
+        }
+        
+        // Iterate the collections, recursively getting all child collections.
+        foreach ($children as $key => $child) {
+            $childs = self::fetchCollectionHierarchy($child['id']);
+            if (count($childs) > 0) {
+                $children[$key]['children'] = $childs;
+            }
+        }
+        
+        return $children;
     }
 }
