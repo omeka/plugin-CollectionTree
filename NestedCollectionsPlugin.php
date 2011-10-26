@@ -198,10 +198,10 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function adminAppendToItemsFormCollection($item)
     {
-        $collectionHierarchy = $this->_db->getTable('NestedCollection')->fetchCollectionHierarchy();
+        $collectionHierarchy = $this->_db->getTable('NestedCollection')->fetchDescendants();
 ?>
 <h2>Collection Hierarchy</h2>
-<?php echo self::buildCollectionHierarchyList($collectionHierarchy); ?>
+<?php echo self::buildCollectionHierarchyList($collectionHierarchy, false); ?>
 <?php
     }
     
@@ -211,17 +211,23 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      * 
      * @see NestedCollectionTable::fetchCollectionHierarchy()
      * @param array $collectionHierarchy
+     * @param bool $linkToCollectionShow
      * @return string
      */
-    public static function buildCollectionHierarchyList($collectionHierarchy)
+    public static function buildCollectionHierarchyList($collectionHierarchy, $linkToCollectionShow = true)
     {
         if (!$collectionHierarchy) {
             return;
         }
         $html = '<ul>';
         foreach ($collectionHierarchy as $collection) {
-            $html .= '<li>' . $collection['name'];
-            $html .= self::buildCollectionHierarchyList($collection['children']);
+            $html .= '<li>';
+            if ($linkToCollectionShow) {
+                $html .= link_to_collection(null, array(), 'show', get_db()->getTable('Collection')->find($collection['id']));
+            } else {
+                $html .= $collection['name'];
+            }
+            $html .= self::buildCollectionHierarchyList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';
         }
         $html .= '</ul>';

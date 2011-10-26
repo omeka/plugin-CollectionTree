@@ -83,26 +83,61 @@ class NestedCollectionTable extends Omeka_Db_Table
     }
     
     /**
-     * Recursive method that returns all child collections of the specified 
-     * collection, or the entire collection hierarchy.
+     * Recursive method that returns all ancestors of the specified collection.
      * 
-     * @param int|null $parentCollectionId
+     * @param int|null $collectionId
      * @return array
      */
-    public function fetchCollectionHierarchy($parentCollectionId = null)
+    public function fetchAncestors($collectionId)
     {
         $db = $this->getDb();
-        $collectionHierarchy = array();
+        $ancestors = array();
         
-        // Select all child collections.
-        if ($parentCollectionId) {
+        do {
+            $sql = "
+            SELECT c.*, nc.parent_collection_id 
+            FROM {$db->NestedCollection} nc
+            JOIN {$db->Collection} c 
+            ON nc.parent_collection_id = c.id 
+            WHERE nc.child_collection_id = ?";
+            $ancestor = $db->fetchRow($sql, array($collectionId));
+            if (!$ancestor) {
+                break;
+            }
+            $collectionId = $ancestor['parent_collection_id'];
+            unset($ancestor['parent_collection_id']);
+            array_unshift($ancestors, $ancestor);
+            if (count($ancestors[1]) > 0) {
+                $ancestors[0]['children'][] = $ancestors[1];
+            }
+            
+        } while (true);
+        
+        if (!$ancestors) {
+            return $ancestors;
+        }
+        return array($ancestors[0]);
+    }
+    
+    /**
+     * Recursive method that returns all descendants of the specified 
+     * collection, or the entire collection hierarchy if none is specified.
+     * 
+     * @param int|null $collectionId
+     * @return array
+     */
+    public function fetchDescendants($collectionId = null)
+    {
+        $db = $this->getDb();
+        
+        if ($collectionId) {
             $sql = "
             SELECT c.* 
             FROM {$db->NestedCollection} nc 
             JOIN {$db->Collection} c 
             ON nc.child_collection_id = c.id 
             WHERE nc.parent_collection_id = ?";
-            $children = $db->fetchAll($sql, array($parentCollectionId));
+            $descendants = $db->fetchAll($sql, array($collectionId));
         
         // Select all top-level collections.
         } else {
@@ -112,17 +147,16 @@ class NestedCollectionTable extends Omeka_Db_Table
             LEFT JOIN {$db->NestedCollection} nc 
             ON nc.child_collection_id = c.id 
             WHERE nc.child_collection_id IS NULL";
-            $children = $db->fetchAll($sql);
+            $descendants = $db->fetchAll($sql);
         }
         
-        // Iterate the collections, recursively getting all child collections.
-        foreach ($children as $key => $child) {
-            $childs = self::fetchCollectionHierarchy($child['id']);
-            if (count($childs) > 0) {
-                $children[$key]['children'] = $childs;
+        foreach ($descendants as $key => $descendant) {
+            $children = self::fetchDescendants($descendant['id']);
+            if (count($children) > 0) {
+                $descendants[$key]['children'] = $children;
             }
         }
         
-        return $children;
+        return $descendants;
     }
 }
