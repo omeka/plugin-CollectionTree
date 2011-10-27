@@ -5,6 +5,7 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     protected $_hooks = array(
         'install', 
         'uninstall', 
+        'initialize', 
         'after_save_form_record', 
         'collection_browse_sql', 
         'admin_append_to_collections_form', 
@@ -12,6 +13,8 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         'public_append_to_collections_show', 
         'admin_append_to_items_form_collection', 
     );
+    
+    protected $_collections;
     
     /**
      * Install the plugin.
@@ -70,6 +73,11 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     {
         $sql = "DROP TABLE IF EXISTS {$this->_db->NestedCollection}";
         $this->_db->query($sql);
+    }
+    
+    public function initialize()
+    {
+        $this->_collections = $this->_db->getTable('NestedCollection')->fetchCollections();
     }
     
     /**
@@ -165,6 +173,11 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     
     protected function _appendToCollectionsShow($collection)
     {
+        $collectionHierarchy = $this->getCollectionHierarchy($collection->id);
+        echo '<pre>';print_r($collectionHierarchy);echo '</pre>';
+        echo self::buildCollectionHierarchyList($collectionHierarchy);
+        exit;
+        
         $parent = $this->_db->getTable('NestedCollection')
                             ->fetchParent($collection->id);
         $children = $this->_db->getTable('NestedCollection')
@@ -203,6 +216,73 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
 <h2>Collection Hierarchy</h2>
 <?php echo self::buildCollectionHierarchyList($collectionHierarchy, false); ?>
 <?php
+    }
+    
+    // Need to find some way to attach $descendants to the current collection 
+    // in $ancestors.
+    public function getCollectionHierarchy($collectionId)
+    {
+        $ancestors = $this->getAncestors($collectionId);
+        $descendants = $this->getDescendants($collectionId);
+        
+        // Assign the descendants to the current collection (only if $ancestors 
+        // is a two-dimensional array).
+        //$ancestors[count($ancestors) - 1]['children'] = $descendants;
+        return array_merge($ancestors, $descendants);
+    }
+    
+    public function getAncestors($collectionId)
+    {
+        $ancestors = array();
+        
+        do {
+            $collection = $this->_getCollection($collectionId);
+            $collectionId = $collection['parent_collection_id'];
+            array_unshift($ancestors, $collection);
+            // Build the ancestor hierarchy.
+            if (count($ancestors[1]) > 1) {
+                $ancestors[0]['children'] = array($ancestors[1]);
+            }
+        } while ($collection['parent_collection_id']);
+        
+        return array($ancestors[0]);
+    }
+    
+    public function getDescendants($collectionId)
+    {
+        $descendants = $this->_getChildCollections($collectionId);
+        
+        $i = 0;
+        foreach ($descendants as $descendant) {
+            $children = $this->getDescendants($descendant['id']);
+            if (count($children) > 0) {
+                $descendants[$i]['children'] = $children;
+                $i++;
+            }
+        }
+        
+        return $descendants;
+    }
+    
+    protected function _getCollection($collectionId)
+    {
+        foreach ($this->_collections as $collection) {
+            if ($collectionId == $collection['id']) {
+                return $collection;
+            }
+        }
+        return false;
+    }
+    
+    protected function _getChildCollections($collectionId)
+    {
+        $childCollections = array();
+        foreach ($this->_collections as $collection) {
+            if ($collectionId == $collection['parent_collection_id']) {
+                $childCollections[] = $collection;
+            }
+        }
+        return $childCollections;
     }
     
     /**

@@ -159,4 +159,15 @@ class NestedCollectionTable extends Omeka_Db_Table
         
         return $descendants;
     }
+    
+    public function fetchCollections()
+    {
+        $db = $this->getDb();
+        $sql = "
+        SELECT c.*, nc.parent_collection_id 
+        FROM {$db->Collection} c 
+        LEFT JOIN {$db->NestedCollection} nc 
+        ON c.id = nc.child_collection_id";
+        return $db->fetchAll($sql);
+    }
 }
