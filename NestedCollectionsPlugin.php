@@ -14,8 +14,6 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         'admin_append_to_items_form_collection', 
     );
     
-    protected $_collections;
-    
     /**
      * Install the plugin.
      * 
@@ -77,7 +75,7 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     
     public function initialize()
     {
-        $this->_collections = $this->_db->getTable('NestedCollection')->fetchCollections();
+        $this->_db->getTable('NestedCollection')->setCollections();
     }
     
     /**
@@ -133,7 +131,7 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function adminAppendToCollectionsForm($collection)
     {
-        $assignableCollections =$this->_db->getTable('NestedCollection')
+        $assignableCollections = $this->_db->getTable('NestedCollection')
                                           ->fetchAssignableParentCollections($collection->id);
         $options = array(0 => 'No parent collection');
         foreach ($assignableCollections as $assignableCollection) {
@@ -173,7 +171,10 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     
     protected function _appendToCollectionsShow($collection)
     {
-        $collectionTree = $this->getCollectionTree($collection->id);
+        $descendants = $this->_db->getTable('NestedCollection')->getDescendants($collection->id);
+        echo '<pre>';print_r($descendants);echo '</pre>';
+        
+        $collectionTree = $this->_db->getTable('NestedCollection')->getCollectionTree($collection->id);
 ?>
 <h2>Collection Tree</h2>
 <?php echo self::buildCollectionTreeList($collectionTree); ?>
@@ -186,112 +187,6 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     public function adminAppendToItemsFormCollection($item)
     {
         
-    }
-    
-    /**
-     * Get the entire collection tree of the specified collection.
-     * 
-     * @param int $collectionId
-     * @return array
-     */
-    public function getCollectionTree($collectionId)
-    {
-        return $this->getAncestors($collectionId, true);
-    }
-    
-    /**
-     * Get the ancestors or the entire collection tree of the specified 
-     * collection.
-     * 
-     * @param int $collectionId
-     * @param bool $returnCollectionTree Include the current collection, its 
-     * ancestors, and its descendants.
-     * @return array
-     */
-    public function getAncestors($collectionId, $returnCollectionTree = false)
-    {
-        $parentCollectionId = $collectionId;
-        $ancestors = array();
-        
-        do {
-            $collection = $this->_getCollection($parentCollectionId);
-            $parentCollectionId = $collection['parent_collection_id'];
-            
-            // Don't include the current collection when not building the 
-            // collection tree.
-            if (!$returnCollectionTree && $collectionId == $collection['id']) {
-                continue;
-            }
-            
-            // Add the descendants to the current collection.
-            if ($returnCollectionTree && $collectionId == $collection['id']) {
-                $collection['current'] = true;
-                $collection['children'] = $this->getDescendants($collection['id']);
-            }
-            
-            array_unshift($ancestors, $collection);
-            
-            if (count($ancestors[1]) > 0) {
-                $ancestors[0]['children'] = array($ancestors[1]);
-                unset($ancestors[1]);
-            }
-            
-        } while ($collection['parent_collection_id']);
-        
-        return $ancestors;
-    }
-    
-    /**
-     * Get the descendants of the specified collection.
-     * 
-     * @param int $collectionId
-     * @return array
-     */
-    public function getDescendants($collectionId)
-    {
-        $descendants = $this->_getChildCollections($collectionId);
-        
-        for ($i = 0; $i < count($descendants); $i++) {
-            $children = $this->getDescendants($descendants[$i]['id']);
-            if (count($children) > 0) {
-                $descendants[$i]['children'] = $children;
-            }
-        }
-        
-        return $descendants;
-    }
-    
-    /**
-     * Get the specified collection.
-     * 
-     * @param int $collectionId
-     * @return array|bool
-     */
-    protected function _getCollection($collectionId)
-    {
-        foreach ($this->_collections as $collection) {
-            if ($collectionId == $collection['id']) {
-                return $collection;
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Get the child collections of the specified collection.
-     * 
-     * @param int $collectionId
-     * @return array
-     */
-    protected function _getChildCollections($collectionId)
-    {
-        $childCollections = array();
-        foreach ($this->_collections as $collection) {
-            if ($collectionId == $collection['parent_collection_id']) {
-                $childCollections[] = $collection;
-            }
-        }
-        return $childCollections;
     }
     
     /**
