@@ -1,7 +1,22 @@
 <?php
 class NestedCollectionTable extends Omeka_Db_Table
 {
+    /**
+     * Cache of all collections, including table and hierarchy data.
+     * 
+     * Load this cache only during actions that must process hierarchical 
+     * collection data.
+     */
     protected $_collections;
+    
+    /**
+     * Cache of variables needed for some use.
+     * 
+     * Caching is often needed to extract variables from recursive methods.
+     * 
+     * @see self::getDescendantTree()
+     */
+    protected $_cache = array();
     
     /**
      * Fetch all collections that can be assigned as a parent collection to the 
@@ -25,7 +40,16 @@ class NestedCollectionTable extends Omeka_Db_Table
         FROM {$db->Collection} 
         WHERE id != ?";
         
-        return $db->fetchAll($sql, array($collectionId));
+        // Cache descendant collection IDs and exclude the collections from the 
+        // result.
+        $this->_resetCache();
+        $this->getDescendantTree($collectionId, true);
+        if ($this->_cache) {
+            $sql .= " AND id NOT IN (" . implode(', ', $this->_cache) . ")";
+        }
+        $this->_resetCache();
+        
+        return $db->fetchAll($sql, array((int) $collectionId));
     }
     
     /**
@@ -115,14 +139,18 @@ class NestedCollectionTable extends Omeka_Db_Table
      * Get the descendant tree of the specified collection.
      * 
      * @param int $collectionId
+     * @param bool $cacheDescendantIds Cache IDs of all descendant collections?
      * @return array
      */
-    public function getDescendantTree($collectionId)
+    public function getDescendantTree($collectionId, $cacheDescendantIds = false)
     {
         $descendants = $this->_getChildCollections($collectionId);
         
         for ($i = 0; $i < count($descendants); $i++) {
-            $children = $this->getDescendantTree($descendants[$i]['id']);
+            if ($cacheDescendantIds) {
+                $this->_cache[] = $descendants[$i]['id'];
+            }
+            $children = $this->getDescendantTree($descendants[$i]['id'], $cacheDescendantIds);
             if (count($children) > 0) {
                 $descendants[$i]['children'] = $children;
             }
@@ -162,5 +190,10 @@ class NestedCollectionTable extends Omeka_Db_Table
             }
         }
         return $childCollections;
+    }
+    
+    protected function _resetCache()
+    {
+        $this->_cache = array();
     }
 }

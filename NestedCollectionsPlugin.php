@@ -171,9 +171,6 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     
     protected function _appendToCollectionsShow($collection)
     {
-        $descendants = $this->_db->getTable('NestedCollection')->getDescendants($collection->id);
-        echo '<pre>';print_r($descendants);echo '</pre>';
-        
         $collectionTree = $this->_db->getTable('NestedCollection')->getCollectionTree($collection->id);
 ?>
 <h2>Collection Tree</h2>
