@@ -5,6 +5,9 @@ class NestedCollectionTable extends Omeka_Db_Table
      * Fetch all collections that can be assigned as a parent collection to the 
      * specified collection.
      * 
+     * All collections that are not the specified collection and not children of 
+     * the specified collection can be parent collections.
+     * 
      * @param null|int $collectionId
      * @return array An array of collection rows.
      */
@@ -40,46 +43,6 @@ class NestedCollectionTable extends Omeka_Db_Table
         
         // Child collection IDs are unique, so only fetch one row.
         return $this->fetchObject($sql, array($childCollectionId));
-    }
-    
-    /**
-     * Fetch the children of the specified collection.
-     * 
-     * @param int $collectionId
-     * @return array
-     */
-    public function fetchChildren($collectionId)
-    {
-        $db = $this->getDb();
-        
-        $sql = "
-        SELECT c.* 
-        FROM {$db->Collection} c 
-        JOIN {$db->NestedCollection} nc 
-        ON c.id = nc.child_collection_id 
-        WHERE nc.parent_collection_id = ?";
-        
-        return $this->fetchAll($sql, $collectionId);
-    }
-    
-    /**
-     * Fetch the parent of the specified collection.
-     * 
-     * @param int $collectionId
-     * @return array
-     */
-    public function fetchParent($collectionId)
-    {
-        $db = $this->getDb();
-        
-        $sql = "
-        SELECT c.* 
-        FROM {$db->Collection} c 
-        JOIN {$db->NestedCollection} nc 
-        ON c.id = nc.parent_collection_id 
-        WHERE nc.child_collection_id = ?";
-        
-        return $this->fetchRow($sql, $collectionId);
     }
     
     public function fetchCollections()

@@ -173,37 +173,10 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     
     protected function _appendToCollectionsShow($collection)
     {
-        $collectionHierarchy = $this->getAncestors($collection->id);
-        echo '<pre>';print_r($collectionHierarchy);echo '</pre>';
-        exit;
-        echo self::buildCollectionHierarchyList($collectionHierarchy);
-        exit;
-        
-        $parent = $this->_db->getTable('NestedCollection')
-                            ->fetchParent($collection->id);
-        $children = $this->_db->getTable('NestedCollection')
-                              ->fetchChildren($collection->id);
-                              
+        $collectionTree = $this->getCollectionTree($collection->id);
 ?>
-<h2>Parent Collection</h2>
-<?php if ($parent): ?>
-<ul>
-    <li><?php echo link_to_collection(null, array(), 'show', $this->_db->getTable('Collection')->find($parent['id'])); ?></li>
-</ul>
-<?php else: ?>
-<p>No parent collection.</p>
-<?php endif; ?>
-
-<h2>Child Collections</h2>
-<?php if ($children): ?>
-<ul>
-    <?php foreach ($children as $child): ?>
-    <li><?php echo link_to_collection(null, array(), 'show', $this->_db->getTable('Collection')->find($child['id'])); ?></li>
-    <?php endforeach; ?>
-</ul>
-<?php else: ?>
-<p>No child collections.</p>
-<?php endif; ?>
+<h2>Collection Tree</h2>
+<?php echo self::buildCollectionTreeList($collectionTree); ?>
 <?php
     }
     
@@ -212,33 +185,30 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function adminAppendToItemsFormCollection($item)
     {
-        $collectionHierarchy = $this->_db->getTable('NestedCollection')->fetchDescendants();
-?>
-<h2>Collection Hierarchy</h2>
-<?php echo self::buildCollectionHierarchyList($collectionHierarchy, false); ?>
-<?php
-    }
-    
-    // Need to find some way to attach $descendants to the current collection 
-    // in $ancestors.
-    public function getCollectionHierarchy($collectionId)
-    {
-        $ancestors = $this->getAncestors($collectionId);
-        $descendants = $this->getDescendants($collectionId);
         
-        // Assign the descendants to the current collection (only if $ancestors 
-        // is a two-dimensional array).
-        //$ancestors[count($ancestors) - 1]['children'] = $descendants;
-        return array_merge($ancestors, $descendants);
     }
     
     /**
-     * Get the ancestors of the specified collection.
+     * Get the entire collection tree of the specified collection.
      * 
      * @param int $collectionId
      * @return array
      */
-    public function getAncestors($collectionId)
+    public function getCollectionTree($collectionId)
+    {
+        return $this->getAncestors($collectionId, true);
+    }
+    
+    /**
+     * Get the ancestors or the entire collection tree of the specified 
+     * collection.
+     * 
+     * @param int $collectionId
+     * @param bool $returnCollectionTree Include the current collection, its 
+     * ancestors, and its descendants.
+     * @return array
+     */
+    public function getAncestors($collectionId, $returnCollectionTree = false)
     {
         $parentCollectionId = $collectionId;
         $ancestors = array();
@@ -246,18 +216,33 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         do {
             $collection = $this->_getCollection($parentCollectionId);
             $parentCollectionId = $collection['parent_collection_id'];
+            
+            // Don't include the current collection when not building the 
+            // collection tree.
+            if (!$returnCollectionTree && $collectionId == $collection['id']) {
+                continue;
+            }
+            
+            // Add the descendants to the current collection.
+            if ($returnCollectionTree && $collectionId == $collection['id']) {
+                $collection['current'] = true;
+                $collection['children'] = $this->getDescendants($collection['id']);
+            }
+            
             array_unshift($ancestors, $collection);
+            
             if (count($ancestors[1]) > 0) {
                 $ancestors[0]['children'] = array($ancestors[1]);
                 unset($ancestors[1]);
             }
+            
         } while ($collection['parent_collection_id']);
         
         return $ancestors;
     }
     
     /**
-     * Get the descendamts of the specified collection.
+     * Get the descendants of the specified collection.
      * 
      * @param int $collectionId
      * @return array
@@ -310,29 +295,27 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     }
     
     /**
-     * Recursive method that returns the collection hierarchy as an unordered 
-     * list.
+     * Build a nested HTML unordered list from the provided collection tree.
      * 
-     * @see NestedCollectionTable::fetchCollectionHierarchy()
-     * @param array $collectionHierarchy
+     * @param array $collectionTree
      * @param bool $linkToCollectionShow
      * @return string
      */
-    public static function buildCollectionHierarchyList($collectionHierarchy, 
+    public static function buildCollectionTreeList($collectionTree, 
         $linkToCollectionShow = true
     ) {
-        if (!$collectionHierarchy) {
+        if (!$collectionTree) {
             return;
         }
         $html = '<ul>';
-        foreach ($collectionHierarchy as $collection) {
+        foreach ($collectionTree as $collection) {
             $html .= '<li>';
-            if ($linkToCollectionShow) {
+            if ($linkToCollectionShow && !isset($collection['current'])) {
                 $html .= link_to_collection(null, array(), 'show', get_db()->getTable('Collection')->find($collection['id']));
             } else {
                 $html .= $collection['name'];
             }
-            $html .= self::buildCollectionHierarchyList($collection['children'], $linkToCollectionShow);
+            $html .= self::buildCollectionTreeList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';
         }
         $html .= '</ul>';
