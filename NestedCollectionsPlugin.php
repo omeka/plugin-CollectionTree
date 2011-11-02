@@ -173,8 +173,9 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     
     protected function _appendToCollectionsShow($collection)
     {
-        $collectionHierarchy = $this->getCollectionHierarchy($collection->id);
+        $collectionHierarchy = $this->getAncestors($collection->id);
         echo '<pre>';print_r($collectionHierarchy);echo '</pre>';
+        exit;
         echo self::buildCollectionHierarchyList($collectionHierarchy);
         exit;
         
@@ -231,39 +232,56 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         return array_merge($ancestors, $descendants);
     }
     
+    /**
+     * Get the ancestors of the specified collection.
+     * 
+     * @param int $collectionId
+     * @return array
+     */
     public function getAncestors($collectionId)
     {
+        $parentCollectionId = $collectionId;
         $ancestors = array();
         
         do {
-            $collection = $this->_getCollection($collectionId);
-            $collectionId = $collection['parent_collection_id'];
+            $collection = $this->_getCollection($parentCollectionId);
+            $parentCollectionId = $collection['parent_collection_id'];
             array_unshift($ancestors, $collection);
-            // Build the ancestor hierarchy.
-            if (count($ancestors[1]) > 1) {
+            if (count($ancestors[1]) > 0) {
                 $ancestors[0]['children'] = array($ancestors[1]);
+                unset($ancestors[1]);
             }
         } while ($collection['parent_collection_id']);
         
-        return array($ancestors[0]);
+        return $ancestors;
     }
     
+    /**
+     * Get the descendamts of the specified collection.
+     * 
+     * @param int $collectionId
+     * @return array
+     */
     public function getDescendants($collectionId)
     {
         $descendants = $this->_getChildCollections($collectionId);
         
-        $i = 0;
-        foreach ($descendants as $descendant) {
-            $children = $this->getDescendants($descendant['id']);
+        for ($i = 0; $i < count($descendants); $i++) {
+            $children = $this->getDescendants($descendants[$i]['id']);
             if (count($children) > 0) {
                 $descendants[$i]['children'] = $children;
-                $i++;
             }
         }
         
         return $descendants;
     }
     
+    /**
+     * Get the specified collection.
+     * 
+     * @param int $collectionId
+     * @return array|bool
+     */
     protected function _getCollection($collectionId)
     {
         foreach ($this->_collections as $collection) {
@@ -274,6 +292,12 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         return false;
     }
     
+    /**
+     * Get the child collections of the specified collection.
+     * 
+     * @param int $collectionId
+     * @return array
+     */
     protected function _getChildCollections($collectionId)
     {
         $childCollections = array();
@@ -294,8 +318,9 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      * @param bool $linkToCollectionShow
      * @return string
      */
-    public static function buildCollectionHierarchyList($collectionHierarchy, $linkToCollectionShow = true)
-    {
+    public static function buildCollectionHierarchyList($collectionHierarchy, 
+        $linkToCollectionShow = true
+    ) {
         if (!$collectionHierarchy) {
             return;
         }
