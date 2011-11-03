@@ -1,6 +1,6 @@
 <?php
 require_once 'Omeka/Plugin/Abstract.php';
-class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
+class CollectionTreePlugin extends Omeka_Plugin_Abstract
 {
     protected $_hooks = array(
         'install', 
@@ -28,15 +28,15 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function install()
     {
-        // child_collection_id must be unique to satisfy the AT MOST ONE parent 
+        // collection_id must be unique to satisfy the AT MOST ONE parent 
         // collection constraint.
         $sql  = "
-        CREATE TABLE IF NOT EXISTS {$this->_db->NestedCollection} (
+        CREATE TABLE IF NOT EXISTS {$this->_db->CollectionTree} (
             id int(10) unsigned NOT NULL AUTO_INCREMENT,
             parent_collection_id int(10) unsigned NOT NULL,
-            child_collection_id int(10) unsigned NOT NULL,
+            collection_id int(10) unsigned NOT NULL,
             PRIMARY KEY (id),
-            UNIQUE KEY child_collection_id (child_collection_id)
+            UNIQUE KEY collection_id (collection_id)
         ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         $this->_db->exec($sql);
         
@@ -50,9 +50,9 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
             
             // Populate the new table.
             $sql = "
-            INSERT INTO {$db->NestedCollection} (
+            INSERT INTO {$db->CollectionTree} (
                 parent_collection_id
-                child_collection_id, 
+                collection_id, 
             ) 
             SELECT parent, child
             FROM {$db->prefix}nests";
@@ -69,13 +69,13 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function uninstall()
     {
-        $sql = "DROP TABLE IF EXISTS {$this->_db->NestedCollection}";
+        $sql = "DROP TABLE IF EXISTS {$this->_db->CollectionTree}";
         $this->_db->query($sql);
     }
     
     public function initialize()
     {
-        $this->_db->getTable('NestedCollection')->setCollections();
+        $this->_db->getTable('CollectionTree')->setCollections();
     }
     
     /**
@@ -88,25 +88,24 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
             return;
         }
         
-        $nestedCollection = $this->_db->getTable('NestedCollection')
-                                      ->findByChildCollectionId($record->id);
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($record->id);
         
         // Insert/update the parent/child relationship.
-        if ($post['nested_collections_parent_collection_id']) {
+        if ($post['collection_tree_parent_collection_id']) {
             
             // If the collection is not already a child collection, create it.
-            if (!$nestedCollection) {
-                $nestedCollection = new NestedCollection;
-                $nestedCollection->child_collection_id = $record->id;
+            if (!$collectionTree) {
+                $collectionTree = new CollectionTree;
+                $collectionTree->collection_id = $record->id;
             }
-            $nestedCollection->parent_collection_id = $post['nested_collections_parent_collection_id'];
-            $nestedCollection->save();
+            $collectionTree->parent_collection_id = $post['collection_tree_parent_collection_id'];
+            $collectionTree->save();
         
         // Delete the parent/child relationship if no parent collection is 
         // specified.
         } else {
-            if ($nestedCollection) {
-                $nestedCollection->delete();
+            if ($collectionTree) {
+                $collectionTree->delete();
             }
         }
     }
@@ -119,8 +118,8 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
         if (!is_admin_theme()) {
             $sql = "
             c.id NOT IN (
-                SELECT nc.child_collection_id 
-                FROM {$this->_db->NestedCollection} nc
+                SELECT nc.collection_id 
+                FROM {$this->_db->CollectionTree} nc
             )";
             $select->where($sql);
         }
@@ -131,21 +130,21 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
      */
     public function adminAppendToCollectionsForm($collection)
     {
-        $assignableCollections = $this->_db->getTable('NestedCollection')
+        $assignableCollections = $this->_db->getTable('CollectionTree')
                                           ->fetchAssignableParentCollections($collection->id);
         $options = array(0 => 'No parent collection');
         foreach ($assignableCollections as $assignableCollection) {
             $options[$assignableCollection['id']] = $assignableCollection['name'];
         }
-        $nestedCollection = $this->_db->getTable('NestedCollection')
-                                      ->findByChildCollectionId($collection->id);
+        $collectionTree = $this->_db->getTable('CollectionTree')
+                                    ->findByCollectionId($collection->id);
 ?>
 <h2>Parent Collection</h2>
 <div class="field">
-    <?php echo __v()->formLabel('nested_collections_parent_collection_id','Select a Parent Collection'); ?>
+    <?php echo __v()->formLabel('collection_tree_parent_collection_id','Select a Parent Collection'); ?>
     <div class="inputs">
-        <?php echo __v()->formSelect('nested_collections_parent_collection_id', 
-                                     $nestedCollection->parent_collection_id, 
+        <?php echo __v()->formSelect('collection_tree_parent_collection_id', 
+                                     $collectionTree->parent_collection_id, 
                                      null, 
                                      $options); ?>
     </div>
@@ -171,7 +170,7 @@ class NestedCollectionsPlugin extends Omeka_Plugin_Abstract
     
     protected function _appendToCollectionsShow($collection)
     {
-        $collectionTree = $this->_db->getTable('NestedCollection')->getCollectionTree($collection->id);
+        $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
 ?>
 <h2>Collection Tree</h2>
 <?php echo self::buildCollectionTreeList($collectionTree); ?>

@@ -1,5 +1,5 @@
 <?php
-class NestedCollectionTable extends Omeka_Db_Table
+class CollectionTreeTable extends Omeka_Db_Table
 {
     /**
      * Cache of all collections, including table and hierarchy data.
@@ -53,22 +53,22 @@ class NestedCollectionTable extends Omeka_Db_Table
     }
     
     /**
-     * Find parent/child relationship by child collection ID.
+     * Find parent/child relationship by collection ID.
      * 
      * @param int $childCollectionId
      * @return Omeka_Record
      */
-    public function findByChildCollectionId($childCollectionId)
+    public function findByCollectionId($collectionId)
     {
         $db = $this->getDb();
         
         $sql = "
         SELECT * 
-        FROM {$db->NestedCollection} 
-        WHERE child_collection_id = ?";
+        FROM {$db->CollectionTree} 
+        WHERE collection_id = ?";
         
         // Child collection IDs are unique, so only fetch one row.
-        return $this->fetchObject($sql, array($childCollectionId));
+        return $this->fetchObject($sql, array($collectionId));
     }
     
     public function setCollections()
@@ -77,8 +77,8 @@ class NestedCollectionTable extends Omeka_Db_Table
         $sql = "
         SELECT c.*, nc.parent_collection_id 
         FROM {$db->Collection} c 
-        LEFT JOIN {$db->NestedCollection} nc 
-        ON c.id = nc.child_collection_id";
+        LEFT JOIN {$db->CollectionTree} nc 
+        ON c.id = nc.collection_id";
         $this->_collections = $db->fetchAll($sql);
     }
     

@@ -1,4 +1,4 @@
 <?php
-require_once 'NestedCollectionsPlugin.php';
-$nestedCollectionsPlugin = new NestedCollectionsPlugin;
-$nestedCollectionsPlugin->setUp();
+require_once 'CollectionTreePlugin.php';
+$collectionTreePlugin = new CollectionTreePlugin;
+$collectionTreePlugin->setUp();
