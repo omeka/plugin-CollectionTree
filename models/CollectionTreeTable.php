@@ -40,14 +40,16 @@ class CollectionTreeTable extends Omeka_Db_Table
         FROM {$db->Collection} 
         WHERE id != ?";
         
-        // Cache descendant collection IDs and exclude the collections from the 
-        // result.
-        $this->_resetCache();
-        $this->getDescendantTree($collectionId, true);
-        if ($this->_cache) {
-            $sql .= " AND id NOT IN (" . implode(', ', $this->_cache) . ")";
+        // If not a new collection, cache descendant collection IDs and exclude 
+        // those collections from the result.
+        if ($collectionId) {
+            $this->_resetCache();
+            $this->getDescendantTree($collectionId, true);
+            if ($this->_cache) {
+                $sql .= " AND id NOT IN (" . implode(', ', $this->_cache) . ")";
+            }
+            $this->_resetCache();
         }
-        $this->_resetCache();
         
         return $db->fetchAll($sql, array((int) $collectionId));
     }

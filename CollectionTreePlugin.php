@@ -131,7 +131,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     public function adminAppendToCollectionsForm($collection)
     {
         $assignableCollections = $this->_db->getTable('CollectionTree')
-                                          ->fetchAssignableParentCollections($collection->id);
+                                           ->fetchAssignableParentCollections($collection->id);
         $options = array(0 => 'No parent collection');
         foreach ($assignableCollections as $assignableCollection) {
             $options[$assignableCollection['id']] = $assignableCollection['name'];
