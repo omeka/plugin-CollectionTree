@@ -5,7 +5,6 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     protected $_hooks = array(
         'install', 
         'uninstall', 
-        'initialize', 
         'after_save_form_record', 
         'collection_browse_sql', 
         'admin_append_to_collections_form', 
@@ -71,11 +70,6 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     {
         $sql = "DROP TABLE IF EXISTS {$this->_db->CollectionTree}";
         $this->_db->query($sql);
-    }
-    
-    public function initialize()
-    {
-        $this->_db->getTable('CollectionTree')->setCollections();
     }
     
     /**

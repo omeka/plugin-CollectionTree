@@ -92,7 +92,10 @@ class CollectionTreeTable extends Omeka_Db_Table
         return $this->fetchObject($sql, array($collectionId));
     }
     
-    public function setCollections()
+    /**
+     * Cache collection data.
+     */
+    public function cacheCollections()
     {
         $db = $this->getDb();
         $sql = "
@@ -188,6 +191,11 @@ class CollectionTreeTable extends Omeka_Db_Table
      */
     protected function _getCollection($collectionId)
     {
+        // Cache collections in not already.
+        if (!$this->_collections) {
+            $this->cacheCollections();
+        }
+        
         foreach ($this->_collections as $collection) {
             if ($collectionId == $collection['id']) {
                 return $collection;
@@ -204,6 +212,11 @@ class CollectionTreeTable extends Omeka_Db_Table
      */
     protected function _getChildCollections($collectionId)
     {
+        // Cache collections if not already.
+        if (!$this->_collections) {
+            $this->cacheCollections();
+        }
+        
         $childCollections = array();
         foreach ($this->_collections as $collection) {
             if ($collectionId == $collection['parent_collection_id']) {
