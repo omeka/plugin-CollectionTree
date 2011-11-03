@@ -55,6 +55,25 @@ class CollectionTreeTable extends Omeka_Db_Table
     }
     
     /**
+     * Fetch all root collections, i.e. those without parent collections.
+     * 
+     * @return array
+     */
+    public function fetchRootCollections()
+    {
+        $db = $this->getDb();
+        
+        $sql = "
+        SELECT c.* 
+        FROM {$db->Collection} c 
+        LEFT JOIN {$db->CollectionTree} nc 
+        ON c.id = nc.collection_id 
+        WHERE nc.id IS NULL";
+        
+        return $this->fetchAll($sql);
+    }
+    
+    /**
      * Find parent/child relationship by collection ID.
      * 
      * @param int $childCollectionId

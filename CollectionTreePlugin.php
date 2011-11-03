@@ -178,11 +178,24 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     }
     
     /**
-     * Display the collection tree.
+     * Display the full collection tree.
      */
     public function adminAppendToItemsFormCollection($item)
     {
-        
+        $html = '<ul>';
+        $rootCollections = $this->_db->getTable('CollectionTree')->fetchRootCollections();
+        foreach ($rootCollections as $rootCollection) {
+            $html .= '<li>';
+            $html .= $rootCollection['name'];
+            $collectionTree = $this->_db->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
+            $html .= self::buildCollectionTreeList($collectionTree, false);
+            $html .= '</li>';
+        }
+        $html .= '</ul>';
+?>
+<h2>Collection Tree</h2>
+<?php echo $html; ?>
+<?php
     }
     
     /**
@@ -192,13 +205,11 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      * @param bool $linkToCollectionShow
      * @return string
      */
-    public static function buildCollectionTreeList($collectionTree, 
-        $linkToCollectionShow = true
-    ) {
+    public static function buildCollectionTreeList($collectionTree, $linkToCollectionShow = true) {
         if (!$collectionTree) {
             return;
         }
-        $html = '<ul>';
+        $html = '<ul style="margin-bottom:0;">';
         foreach ($collectionTree as $collection) {
             $html .= '<li>';
             if ($linkToCollectionShow && !isset($collection['current'])) {
