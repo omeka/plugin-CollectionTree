@@ -248,6 +248,9 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      */
     public static function linkToCollectionShow($collectionId)
     {
+        // Require the helpers libraries. This is necessary when calling this 
+        // method before the libraries are loaded.
+        require_once HELPERS;
         return link_to_collection(null, array(), 'show', 
                                   get_db()->getTable('Collection')->find($collectionId));
     }
