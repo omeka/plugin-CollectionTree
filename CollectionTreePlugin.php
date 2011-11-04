@@ -176,45 +176,79 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      */
     public function adminAppendToItemsFormCollection($item)
     {
-        $html = '<ul>';
-        $rootCollections = $this->_db->getTable('CollectionTree')->fetchRootCollections();
-        foreach ($rootCollections as $rootCollection) {
-            $html .= '<li>';
-            $html .= $rootCollection['name'];
-            $collectionTree = $this->_db->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
-            $html .= self::buildCollectionTreeList($collectionTree, false);
-            $html .= '</li>';
-        }
-        $html .= '</ul>';
 ?>
 <h2>Collection Tree</h2>
-<?php echo $html; ?>
+<?php echo self::getFullCollectionTreeList(false); ?>
 <?php
     }
     
     /**
-     * Build a nested HTML unordered list from the provided collection tree.
+     * Build a nested HTML unordered list of the full collection tree, starting 
+     * at root collections.
      * 
+     * @param bool $linkToCollectionShow
+     * @return string
+     */
+    public static function getFullCollectionTreeList($linkToCollectionShow = true)
+    {
+        $html = '<ul style="list-style-type:disc;margin-bottom:0;">';
+        $rootCollections = get_db()->getTable('CollectionTree')->fetchRootCollections();
+        foreach ($rootCollections as $rootCollection) {
+            $html .= '<li>';
+            if ($linkToCollectionShow) {
+                $html .= self::linkToCollectionShow($rootCollection['id']);
+            } else {
+                $html .= $rootCollection['name'];
+            }
+            $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
+            $html .= self::getCollectionTreeList($collectionTree, $linkToCollectionShow);
+            $html .= '</li>';
+        }
+        $html .= '</ul>';
+        
+        return $html;
+    }
+    
+    /**
+     * Recursively build a nested HTML unordered list from the provided 
+     * collection tree.
+     * 
+     * @see CollectionTreeTable::getCollectionTree()
+     * @see CollectionTreeTable::getAncestorTree()
+     * @see CollectionTreeTable::getDescendantTree()
      * @param array $collectionTree
      * @param bool $linkToCollectionShow
      * @return string
      */
-    public static function buildCollectionTreeList($collectionTree, $linkToCollectionShow = true) {
+    public static function getCollectionTreeList($collectionTree, $linkToCollectionShow = true) {
         if (!$collectionTree) {
             return;
         }
-        $html = '<ul style="margin-bottom:0;">';
+        $html = '<ul style="list-style-type:disc;margin-bottom:0;">';
         foreach ($collectionTree as $collection) {
             $html .= '<li>';
             if ($linkToCollectionShow && !isset($collection['current'])) {
-                $html .= link_to_collection(null, array(), 'show', get_db()->getTable('Collection')->find($collection['id']));
+                $html .= self::linkToCollectionShow($collection['id']);
             } else {
                 $html .= $collection['name'];
             }
-            $html .= self::buildCollectionTreeList($collection['children'], $linkToCollectionShow);
+            $html .= self::getCollectionTreeList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';
         }
         $html .= '</ul>';
         return $html;
+    }
+    
+    /**
+     * Get the HTML link to the specified collection show page.
+     * 
+     * @see link_to_collection()
+     * @param int $collectionId
+     * @return string
+     */
+    public static function linkToCollectionShow($collectionId)
+    {
+        return link_to_collection(null, array(), 'show', 
+                                  get_db()->getTable('Collection')->find($collectionId));
     }
 }
