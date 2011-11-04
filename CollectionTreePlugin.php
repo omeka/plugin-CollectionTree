@@ -214,7 +214,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      */
     public static function getFullCollectionTreeList($linkToCollectionShow = true)
     {
-        $html = '<ul style="list-style-type:disc;margin-bottom:0;">';
+        $html = '<ul style="list-style-type:disc;margin-bottom:0;list-style-position:inside;">';
         $rootCollections = get_db()->getTable('CollectionTree')->fetchRootCollections();
         foreach ($rootCollections as $rootCollection) {
             $html .= '<li>';
@@ -247,7 +247,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         if (!$collectionTree) {
             return;
         }
-        $html = '<ul style="list-style-type:disc;margin-bottom:0;">';
+        $html = '<ul style="list-style-type:disc;margin-bottom:0;list-style-position:inside;">';
         foreach ($collectionTree as $collection) {
             $html .= '<li>';
             if ($linkToCollectionShow && !isset($collection['current'])) {
