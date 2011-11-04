@@ -13,6 +13,11 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         'admin_append_to_items_form_collection', 
     );
     
+    protected $_filters = array(
+        'admin_navigation_main', 
+        'public_navigation_main', 
+    );
+    
     /**
      * Install the plugin.
      * 
@@ -25,7 +30,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      * the plugin, save this plugin in the plugins directory, and install this 
      * plugin as normal.
      */
-    public function install()
+    public function installHook()
     {
         // collection_id must be unique to satisfy the AT MOST ONE parent 
         // collection constraint.
@@ -66,7 +71,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Uninstall the plugin.
      */
-    public function uninstall()
+    public function uninstallHook()
     {
         $sql = "DROP TABLE IF EXISTS {$this->_db->CollectionTree}";
         $this->_db->query($sql);
@@ -75,7 +80,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Save the parent/child relationship.
      */
-    public function afterSaveFormRecord($record, $post)
+    public function afterSaveFormRecordHook($record, $post)
     {
         // Only process collection forms.
         if (!($record instanceof Collection)) {
@@ -107,7 +112,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Omit all child collections from the collection browse.
      */
-    public function collectionBrowseSql($select, $params)
+    public function collectionBrowseSqlHook($select, $params)
     {
         if (!is_admin_theme()) {
             $sql = "
@@ -122,7 +127,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the parent collection form.
      */
-    public function adminAppendToCollectionsForm($collection)
+    public function adminAppendToCollectionsFormHook($collection)
     {
         $assignableCollections = $this->_db->getTable('CollectionTree')
                                            ->fetchAssignableParentCollections($collection->id);
@@ -149,7 +154,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function adminAppendToCollectionsShowPrimary($collection)
+    public function adminAppendToCollectionsShowPrimaryHook($collection)
     {
         $this->_appendToCollectionsShow($collection);
     }
@@ -157,7 +162,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function publicAppendToCollectionsShow()
+    public function publicAppendToCollectionsShowHook()
     {
         $this->_appendToCollectionsShow(get_current_collection());
     }
@@ -174,12 +179,30 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the full collection tree.
      */
-    public function adminAppendToItemsFormCollection($item)
+    public function adminAppendToItemsFormCollectionHook($item)
     {
 ?>
 <h2>Collection Tree</h2>
 <?php echo self::getFullCollectionTreeList(false); ?>
 <?php
+    }
+    
+    /**
+     * Add the collection tree page to the admin navigation.
+     */
+    public function adminNavigationMainFilter($nav)
+    {
+        $nav['Collection Tree'] = uri('collection-tree');
+        return $nav;
+    }
+    
+    /**
+     * Add the collection tree page to the public navigation.
+     */
+    public function publicNavigationMainFilter($nav)
+    {
+        $nav['Collection Tree'] = uri('collection-tree');
+        return $nav;
     }
     
     /**
