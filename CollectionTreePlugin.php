@@ -167,7 +167,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
 ?>
 <h2>Collection Tree</h2>
-<?php echo self::buildCollectionTreeList($collectionTree); ?>
+<?php echo self::getCollectionTreeList($collectionTree); ?>
 <?php
     }
     
