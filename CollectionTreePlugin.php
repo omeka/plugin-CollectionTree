@@ -5,7 +5,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     protected $_hooks = array(
         'install', 
         'uninstall', 
-        'after_save_form_record', 
+        'after_save_form_collection', 
         'collection_browse_sql', 
         'admin_append_to_collections_form', 
         'admin_append_to_collections_show_primary', 
@@ -80,14 +80,9 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Save the parent/child relationship.
      */
-    public function afterSaveFormRecordHook($record, $post)
+    public function afterSaveFormCollectionHook($collection, $post)
     {
-        // Only process collection forms.
-        if (!($record instanceof Collection)) {
-            return;
-        }
-        
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($record->id);
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($collection->id);
         
         // Insert/update the parent/child relationship.
         if ($post['collection_tree_parent_collection_id']) {
@@ -95,7 +90,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             // If the collection is not already a child collection, create it.
             if (!$collectionTree) {
                 $collectionTree = new CollectionTree;
-                $collectionTree->collection_id = $record->id;
+                $collectionTree->collection_id = $collection->id;
             }
             $collectionTree->parent_collection_id = $post['collection_tree_parent_collection_id'];
             $collectionTree->save();
