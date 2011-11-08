@@ -231,12 +231,18 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      * at root collections.
      * 
      * @param bool $linkToCollectionShow
-     * @return string
+     * @return string|null
      */
     public static function getFullCollectionTreeList($linkToCollectionShow = true)
     {
-        $html = '<ul style="list-style-type:disc;margin-bottom:0;list-style-position:inside;">';
         $rootCollections = get_db()->getTable('CollectionTree')->fetchRootCollections();
+        
+        // Return NULL if there are no root collections.
+        if (!$rootCollections) {
+            return null;
+        }
+        
+        $html = '<ul style="list-style-type:disc;margin-bottom:0;list-style-position:inside;">';
         foreach ($rootCollections as $rootCollection) {
             $html .= '<li>';
             if ($linkToCollectionShow) {
