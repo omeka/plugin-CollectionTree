@@ -6,6 +6,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         'install', 
         'uninstall', 
         'after_save_form_collection', 
+        'after_delete_collection', 
         'collection_browse_sql', 
         'admin_append_to_collections_form', 
         'admin_append_to_collections_show_primary', 
@@ -101,6 +102,31 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             if ($collectionTree) {
                 $collectionTree->delete();
             }
+        }
+    }
+    
+    /**
+     * Handle collection deletions.
+     * 
+     * Deleting a collection runs the risk of orphaning a child branch. To 
+     * prevent this, move child collections to the root level. It is the 
+     * responsibility of the administrator to reassign the child branches to the 
+     * appropriate parent collection.
+     */
+    public function afterDeleteCollectionHook($collection)
+    {
+        // Delete the relationship with the parent collection.
+        $collectionTree = $this->_db->getTable('CollectionTree')
+                                              ->findByCollectionId($collection->id);
+        if ($collectionTree) {
+            $collectionTree->delete();
+        }
+        
+        // Move child collections to root level by deleting their relationships.
+        $collectionTrees = $this->_db->getTable('CollectionTree')
+                                     ->findByParentCollectionId($collection->id);
+        foreach ($collectionTrees as  $collectionTree) {
+            $collectionTree->delete();
         }
     }
     

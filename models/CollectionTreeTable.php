@@ -95,6 +95,24 @@ class CollectionTreeTable extends Omeka_Db_Table
     }
     
     /**
+     * Find parent/child relationships by parent collection ID.
+     * 
+     * @param int $parentCollectionId
+     * @return array
+     */
+    public function findByParentCollectionId($parentCollectionId)
+    {
+        $db = $this->getDb();
+        
+        $sql = "
+        SELECT * 
+        FROM {$db->CollectionTree} 
+        WHERE parent_collection_id = ?";
+        
+        return $this->fetchObjects($sql, array($parentCollectionId));
+    }
+    
+    /**
      * Cache collection data.
      */
     public function cacheCollections()
