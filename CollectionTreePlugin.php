@@ -31,7 +31,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      * the plugin, save this plugin in the plugins directory, and install this 
      * plugin as normal.
      */
-    public function installHook()
+    public function hookInstall()
     {
         // collection_id must be unique to satisfy the AT MOST ONE parent 
         // collection constraint.
@@ -72,7 +72,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Uninstall the plugin.
      */
-    public function uninstallHook()
+    public function hookUninstall()
     {
         $sql = "DROP TABLE IF EXISTS {$this->_db->CollectionTree}";
         $this->_db->query($sql);
@@ -81,7 +81,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Save the parent/child relationship.
      */
-    public function afterSaveFormCollectionHook($collection, $post)
+    public function hookAfterSaveFormCollection($collection, $post)
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($collection->id);
         
@@ -113,7 +113,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      * responsibility of the administrator to reassign the child branches to the 
      * appropriate parent collection.
      */
-    public function afterDeleteCollectionHook($collection)
+    public function hookAfterDeleteCollection($collection)
     {
         // Delete the relationship with the parent collection.
         $collectionTree = $this->_db->getTable('CollectionTree')
@@ -133,7 +133,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Omit all child collections from the collection browse.
      */
-    public function collectionBrowseSqlHook($select, $params)
+    public function hookCollectionBrowseSql($select, $params)
     {
         if (!is_admin_theme()) {
             $sql = "
@@ -148,7 +148,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the parent collection form.
      */
-    public function adminAppendToCollectionsFormHook($collection)
+    public function hookAdminAppendToCollectionsForm($collection)
     {
         $assignableCollections = $this->_db->getTable('CollectionTree')
                                            ->fetchAssignableParentCollections($collection->id);
@@ -175,7 +175,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function adminAppendToCollectionsShowPrimaryHook($collection)
+    public function hookAdminAppendToCollectionsShowPrimary($collection)
     {
         $this->_appendToCollectionsShow($collection);
     }
@@ -183,7 +183,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function publicAppendToCollectionsShowHook()
+    public function hookPublicAppendToCollectionsShow()
     {
         $this->_appendToCollectionsShow(get_current_collection());
     }
@@ -200,7 +200,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Display the full collection tree.
      */
-    public function adminAppendToItemsFormCollectionHook($item)
+    public function hookAdminAppendToItemsFormCollection($item)
     {
 ?>
 <h2>Collection Tree</h2>
@@ -211,7 +211,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Add the collection tree page to the admin navigation.
      */
-    public function adminNavigationMainFilter($nav)
+    public function filterAdminNavigationMain($nav)
     {
         $nav['Collection Tree'] = uri('collection-tree');
         return $nav;
@@ -220,7 +220,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Add the collection tree page to the public navigation.
      */
-    public function publicNavigationMainFilter($nav)
+    public function filterPublicNavigationMain($nav)
     {
         $nav['Collection Tree'] = uri('collection-tree');
         return $nav;
