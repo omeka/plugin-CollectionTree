@@ -55,16 +55,16 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             
             // Populate the new table.
             $sql = "
-            INSERT INTO {$db->CollectionTree} (
-                parent_collection_id
-                collection_id, 
+            INSERT INTO {$this->_db->CollectionTree} (
+                parent_collection_id, 
+                collection_id
             ) 
             SELECT parent, child
-            FROM {$db->prefix}nests";
+            FROM {$this->_db->prefix}nests";
             $this->_db->exec($sql);
             
             // Delete the old table.
-            $sql = "DROP TABLE {$db->prefix}nests";
+            $sql = "DROP TABLE {$this->_db->prefix}nests";
             $this->_db->query($sql);
         }
     }
