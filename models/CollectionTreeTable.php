@@ -178,7 +178,7 @@ class CollectionTreeTable extends Omeka_Db_Table
             
             // Save the descendant tree as children of the parent collection and 
             // remove the extraneous descendant tree.
-            if (count($tree[1]) > 0) {
+            if (isset($tree[1])) {
                 $tree[0]['children'] = array($tree[1]);
                 unset($tree[1]);
             }
@@ -204,8 +204,10 @@ class CollectionTreeTable extends Omeka_Db_Table
                 $this->_cache[] = $descendantTree[$i]['id'];
             }
             $children = $this->getDescendantTree($descendantTree[$i]['id'], $cacheDescendantIds);
-            if (count($children) > 0) {
+            if ($children) {
                 $descendantTree[$i]['children'] = $children;
+            } else {
+                $descendantTree[$i]['children'] = array();
             }
         }
         

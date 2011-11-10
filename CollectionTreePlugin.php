@@ -158,13 +158,18 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         }
         $collectionTree = $this->_db->getTable('CollectionTree')
                                     ->findByCollectionId($collection->id);
+        if ($collectionTree) {
+            $parentCollectionId = $collectionTree->parent_collection_id;
+        } else {
+            $parentCollectionId = null;
+        }
 ?>
 <h2>Parent Collection</h2>
 <div class="field">
     <?php echo __v()->formLabel('collection_tree_parent_collection_id','Select a Parent Collection'); ?>
     <div class="inputs">
         <?php echo __v()->formSelect('collection_tree_parent_collection_id', 
-                                     $collectionTree->parent_collection_id, 
+                                     $parentCollectionId, 
                                      null, 
                                      $options); ?>
     </div>
