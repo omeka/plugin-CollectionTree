@@ -240,7 +240,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      */
     public static function getFullCollectionTreeList($linkToCollectionShow = true)
     {
-        $rootCollections = get_db()->getTable('CollectionTree')->fetchRootCollections();
+        $rootCollections = get_db()->getTable('CollectionTree')->getRootCollections();
         
         // Return NULL if there are no root collections.
         if (!$rootCollections) {
