@@ -48,7 +48,7 @@ class CollectionTreeTable extends Omeka_Db_Table
             $this->_resetCache();
             $this->getDescendantTree($collectionId, true);
             if ($this->_cache) {
-                $sql .= " AND id NOT IN (" . implode(', ', $this->_cache) . ")";
+                $sql .= " AND id NOT IN (" . implode(', ', array_keys($this->_cache)) . ")";
             }
             $this->_resetCache();
         }
@@ -111,6 +111,32 @@ class CollectionTreeTable extends Omeka_Db_Table
         }
         
         $this->_collections = $db->fetchAll($sql);
+    }
+    
+    /**
+     * Return the collection tree hierarchy as a one-dimensional array.
+     * 
+     * @param string $padding The string representation of the collection depth.
+     * @return array
+     */
+    public function findPairsForSelectForm($padding = '-')
+    {
+        $options = array();
+        
+        foreach ($this->getRootCollections() as $rootCollection) {
+            
+            $options[$rootCollection['id']] = $rootCollection['name'];
+            
+            $this->_resetCache();
+            $this->getDescendantTree($rootCollection['id'], true);
+            foreach ($this->_cache as $collectionId => $collectionDepth) {
+                $collection = $this->getCollection($collectionId);
+                $options[$collectionId] = str_repeat($padding, $collectionDepth) . ' ' .$collection['name'];
+            }
+        }
+        $this->_resetCache();
+        
+        return $options;
     }
     
     /**
@@ -179,18 +205,31 @@ class CollectionTreeTable extends Omeka_Db_Table
      * Recursively get the descendant tree of the specified collection.
      * 
      * @param int $collectionId
-     * @param bool $cacheDescendantIds Cache IDs of all descendant collections?
+     * @param bool $cacheDescendantInfo Cache IDs and depth of all descendant 
+     * collections?
+     * @param int $collectionDepth The initial depth of the collection.
      * @return array
      */
-    public function getDescendantTree($collectionId, $cacheDescendantIds = false)
-    {
-        $descendantTree = $this->getChildCollections($collectionId);
+    public function getDescendantTree($collectionId, $cacheDescendantInfo = false, 
+        $collectionDepth = 0
+    ) {
+        // Increment the collection depth.
+        $collectionDepth++;
         
+        // Iterate the child collections.
+        $descendantTree = $this->getChildCollections($collectionId);
         for ($i = 0; $i < count($descendantTree); $i++) {
-            if ($cacheDescendantIds) {
-                $this->_cache[] = $descendantTree[$i]['id'];
+            
+            if ($cacheDescendantInfo) {
+                $this->_cache[$descendantTree[$i]['id']] = $collectionDepth;
             }
-            $children = $this->getDescendantTree($descendantTree[$i]['id'], $cacheDescendantIds);
+            
+            // Recurse the child collections, getting their children.
+            $children = $this->getDescendantTree($descendantTree[$i]['id'], 
+                                                 $cacheDescendantInfo, 
+                                                 $collectionDepth);
+            
+            // Assign the child collections to the descendant tree.
             if ($children) {
                 $descendantTree[$i]['children'] = $children;
             } else {

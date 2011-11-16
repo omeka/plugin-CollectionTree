@@ -11,12 +11,12 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         'admin_append_to_collections_form', 
         'admin_append_to_collections_show_primary', 
         'public_append_to_collections_show', 
-        'admin_append_to_items_form_collection', 
     );
     
     protected $_filters = array(
         'admin_navigation_main', 
         'public_navigation_main', 
+        'collection_select_options', 
     );
     
     /**
@@ -203,17 +203,6 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     }
     
     /**
-     * Display the full collection tree.
-     */
-    public function hookAdminAppendToItemsFormCollection($item)
-    {
-?>
-<h2>Collection Tree</h2>
-<?php echo self::getFullCollectionTreeList(false); ?>
-<?php
-    }
-    
-    /**
      * Add the collection tree page to the admin navigation.
      */
     public function filterAdminNavigationMain($nav)
@@ -229,6 +218,14 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     {
         $nav['Collection Tree'] = uri('collection-tree');
         return $nav;
+    }
+    
+    /**
+     * Return collection dropdown menu options as a hierarchical tree.
+     */
+    public function filterCollectionSelectOptions($options)
+    {
+        return $this->_db->getTable('CollectionTree')->findPairsForSelectForm();
     }
     
     /**
