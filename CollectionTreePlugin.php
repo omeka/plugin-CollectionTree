@@ -5,6 +5,8 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     protected $_hooks = array(
         'install',
         'uninstall',
+        'config_form',
+        'config',
         'after_save_form_collection',
         'after_delete_collection',
         'collection_browse_sql',
@@ -67,6 +69,8 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             $sql = "DROP TABLE {$this->_db->prefix}nests";
             $this->_db->query($sql);
         }
+        
+        set_option('collection_tree_alpha_order', '0');
     }
 
     /**
@@ -76,8 +80,37 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     {
         $sql = "DROP TABLE IF EXISTS {$this->_db->CollectionTree}";
         $this->_db->query($sql);
+        
+        delete_option('collection_tree_alpha_order');
     }
 
+    /**
+     * Display the config form.
+     */
+    public function hookConfigForm()
+    {
+?>
+<div class="field">
+    <label for="collection_tree_alpha_order">Order the collection tree alphabetically?</label>
+    <div class="inputs">
+        <?php echo __v()->formCheckbox('collection_tree_alpha_order', 
+                                       null, 
+                                       array('checked' => (bool) get_option('collection_tree_alpha_order'))); ?>
+        <p class="explanation">This does not affect the order of the collections 
+        browse page.</p>
+    </div>
+</div>
+<?php
+    }
+    
+    /**
+     * Handle the config form.
+     */
+    public function hookConfig()
+    {
+        set_option('collection_tree_alpha_order', $_POST['collection_tree_alpha_order']);
+    }
+    
     /**
      * Save the parent/child relationship.
      */
