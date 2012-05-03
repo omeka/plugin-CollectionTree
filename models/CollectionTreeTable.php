@@ -105,16 +105,16 @@ class CollectionTreeTable extends Omeka_Db_Table
         LEFT JOIN {$db->CollectionTree} nc
         ON c.id = nc.collection_id";
 
-        // Order alphabetically if configured to do so.
-        if (get_option('collection_tree_alpha_order')) {
-            $sql .= ' ORDER BY c.name';
-        }
-        
         // Cache only those collections to which the current user has access.
         if (!get_acl()->isAllowed(current_user(), 'Collections', 'showNotPublic')) {
             $sql .= ' WHERE c.public = 1';
         }
 
+        // Order alphabetically if configured to do so.
+        if (get_option('collection_tree_alpha_order')) {
+            $sql .= ' ORDER BY c.name';
+        }
+        
         $this->_collections = $db->fetchAll($sql);
     }
 
