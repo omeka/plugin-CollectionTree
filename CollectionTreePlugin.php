@@ -277,7 +277,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             return null;
         }
 
-        $html = '<ul>';
+        $html = '<div id="collectionTree"><ul>';
         foreach ($rootCollections as $rootCollection) {
             $html .= '<li>';
             if ($linkToCollectionShow) {
@@ -289,7 +289,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             $html .= self::getCollectionTreeList($collectionTree, $linkToCollectionShow);
             $html .= '</li>';
         }
-        $html .= '</ul>';
+        $html .= '</ul></div><!--end of collectionTree-->';
 
         return $html;
     }
@@ -309,7 +309,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         if (!$collectionTree) {
             return;
         }
-        $html = '<ul>';
+        $html = '<div id="collectionTree"><ul>';
         foreach ($collectionTree as $collection) {
             $html .= '<li>';
             if ($linkToCollectionShow && !isset($collection['current'])) {
@@ -320,7 +320,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             $html .= self::getCollectionTreeList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';
         }
-        $html .= '</ul>';
+        $html .= '</ul></div><!--end collectionTree-->';
         return $html;
     }
 
