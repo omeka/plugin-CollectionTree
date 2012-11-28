@@ -38,9 +38,11 @@ class CollectionTreeTable extends Omeka_Db_Table
         $collectionId = (int) $collectionId;
 
         $sql = "
-        SELECT *
-        FROM {$db->Collection}
-        WHERE id != ?";
+        SELECT c.*, nc.name
+        FROM {$db->Collection} c
+        LEFT JOIN {$db->CollectionTree} nc
+        ON c.id = nc.collection_id
+        WHERE c.id != ?";
 
         // If not a new collection, cache descendant collection IDs and exclude
         // those collections from the result.
@@ -48,7 +50,7 @@ class CollectionTreeTable extends Omeka_Db_Table
             $this->_resetCache();
             $this->getDescendantTree($collectionId, true);
             if ($this->_cache) {
-                $sql .= " AND id NOT IN (" . implode(', ', array_keys($this->_cache)) . ")";
+                $sql .= " AND c.id NOT IN (" . implode(', ', array_keys($this->_cache)) . ")";
             }
             $this->_resetCache();
         }
@@ -100,7 +102,7 @@ class CollectionTreeTable extends Omeka_Db_Table
     {
         $db = $this->getDb();
         $sql = "
-        SELECT c.*, nc.parent_collection_id
+        SELECT c.*, nc.parent_collection_id, nc.name
         FROM {$db->Collection} c
         LEFT JOIN {$db->CollectionTree} nc
         ON c.id = nc.collection_id";
@@ -112,7 +114,7 @@ class CollectionTreeTable extends Omeka_Db_Table
 
         // Order alphabetically if configured to do so.
         if (get_option('collection_tree_alpha_order')) {
-            $sql .= ' ORDER BY c.name';
+            $sql .= ' ORDER BY nc.name';
         }
         
         $this->_collections = $db->fetchAll($sql);

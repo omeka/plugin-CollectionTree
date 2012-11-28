@@ -1,18 +1,18 @@
 <?php
-require_once 'Omeka/Plugin/Abstract.php';
-class CollectionTreePlugin extends Omeka_Plugin_Abstract
+class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
 {
     protected $_hooks = array(
         'install',
         'uninstall',
+        'upgrade',
         'config_form',
         'config',
-        'after_save_form_collection',
+        'after_save_collection',
         'after_delete_collection',
         'collection_browse_sql',
-        'admin_append_to_collections_form',
-        'admin_append_to_collections_show_primary',
-        'public_append_to_collections_show',
+        'admin_collections_form',
+        'admin_collections_show',
+        'public_collections_show',
     );
 
     protected $_filters = array(
@@ -20,59 +20,31 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         'public_navigation_main',
         'collection_select_options',
     );
-
+    
     /**
      * Install the plugin.
      *
      * One collection can have AT MOST ONE parent collection. One collection can
      * have ZERO OR MORE child collections.
-     *
-     * A limited release version (v0.1, named "Nested") of this plugin may still
-     * be used by a handful of early adopters. Because of the plugin name
-     * change, they must delete the Nested plugin directory without uninstalling
-     * the plugin, save this plugin in the plugins directory, and install this
-     * plugin as normal.
      */
     public function hookInstall()
     {
         // collection_id must be unique to satisfy the AT MOST ONE parent
         // collection constraint.
         $sql  = "
-        CREATE TABLE IF NOT EXISTS {$this->_db->CollectionTree} (
-            id int(10) unsigned NOT NULL AUTO_INCREMENT,
-            parent_collection_id int(10) unsigned NOT NULL,
-            collection_id int(10) unsigned NOT NULL,
-            PRIMARY KEY (id),
-            UNIQUE KEY collection_id (collection_id)
-        ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+        CREATE TABLE IF NOT EXISTS `{$this->_db->CollectionTree}` (
+          `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+          `parent_collection_id` int(10) unsigned NOT NULL,
+          `collection_id` int(10) unsigned NOT NULL,
+          `name` text COLLATE utf8_unicode_ci,
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `collection_id` (`collection_id`)
+        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         $this->_db->query($sql);
-
-
-        // Determine if the old Nested plugin is installed.
-        $nested = $this->_db->getTable('Plugin')->findByDirectoryName('Nested');
-        if ($nested && $nested->version == '0.1') {
-
-            // Delete Nested from the plugins table.
-            $nested->delete();
-
-            // Populate the new table.
-            $sql = "
-            INSERT INTO {$this->_db->CollectionTree} (
-                parent_collection_id,
-                collection_id
-            )
-            SELECT parent, child
-            FROM {$this->_db->prefix}nests";
-            $this->_db->query($sql);
-
-            // Delete the old table.
-            $sql = "DROP TABLE {$this->_db->prefix}nests";
-            $this->_db->query($sql);
-        }
         
         set_option('collection_tree_alpha_order', '0');
     }
-
+    
     /**
      * Uninstall the plugin.
      */
@@ -83,7 +55,35 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         
         delete_option('collection_tree_alpha_order');
     }
-
+    
+    /**
+     * Upgrade from earlier versions.
+     */
+    public function hookUpgrade($args)
+    {
+        // Prior to Omeka 2.0, collection names were stored in the collections 
+        // table; now they are stored as Dublin Core Title.
+        if (version_compare($args['old_version'], '2.0', '<')) {
+            
+            // Change the storage engine to InnoDB.
+            $sql = "ALTER TABLE {$this->_db->CollectionTree} ENGINE = INNODB";
+            $this->_db->query($sql);
+            
+            // Add the name column to the collection_trees table.
+            $sql = "ALTER TABLE {$this->_db->CollectionTree} ADD `name` TEXT NULL";
+            $this->_db->query($sql);
+            
+            // Assign names to their corresponding collection_tree rows.
+            $collectionTable = $this->_db->getTable('Collection');
+            $collectionTrees = $this->_db->getTable('CollectionTree')->findAll();
+            foreach ($collectionTrees as $collectionTree) {
+                $collection = $collectionTable->find($collectionTree['collection_id']);
+                $collectionTree->name = metadata($collection, array('Dublin Core', 'Title'));
+                $collectionTree->save();
+            }
+        }
+    }
+    
     /**
      * Display the config form.
      */
@@ -91,13 +91,14 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     {
 ?>
 <div class="field">
-    <label for="collection_tree_alpha_order">Order the collection tree alphabetically?</label>
-    <div class="inputs">
-        <?php echo __v()->formCheckbox('collection_tree_alpha_order', 
-                                       null, 
-                                       array('checked' => (bool) get_option('collection_tree_alpha_order'))); ?>
-        <p class="explanation">This does not affect the order of the collections 
-        browse page.</p>
+    <div id="collection_tree_alpha_order_label" class="two columns alpha">
+        <label for="collection_tree_alpha_order">Order alphabetically?</label>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation">Order the collection tree alphabetically? This does 
+        not affect the order of the collections browse page.</p>
+        <?php echo get_view()->formCheckbox('collection_tree_alpha_order', null, 
+        array('checked' => (bool) get_option('collection_tree_alpha_order'))); ?>
     </div>
 </div>
 <?php
@@ -114,21 +115,32 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Save the parent/child relationship.
      */
-    public function hookAfterSaveFormCollection($collection, $post)
+    public function hookAfterSaveCollection($args)
     {
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($collection->id);
-
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
+        
+        // Only save the relationship during a form submission.
+        if (!isset($args['post'])) {
+            if ($collectionTree) {
+                // Set the collection name to the tree.
+                $collectionTree->name = metadata($args['record'], array('Dublin Core', 'Title'));
+                $collectionTree->save();
+            }
+            return;
+        }
+        
         // Insert/update the parent/child relationship.
-        if ($post['collection_tree_parent_collection_id']) {
-
+        if ($args['post']['collection_tree_parent_collection_id']) {
+            
             // If the collection is not already a child collection, create it.
             if (!$collectionTree) {
                 $collectionTree = new CollectionTree;
-                $collectionTree->collection_id = $collection->id;
+                $collectionTree->collection_id = $args['record']->id;
             }
-            $collectionTree->parent_collection_id = $post['collection_tree_parent_collection_id'];
+            $collectionTree->parent_collection_id = $args['post']['collection_tree_parent_collection_id'];
+            $collectionTree->name = metadata($args['record'], array('Dublin Core', 'Title'));
             $collectionTree->save();
-
+            
         // Delete the parent/child relationship if no parent collection is
         // specified.
         } else {
@@ -137,7 +149,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
             }
         }
     }
-
+    
     /**
      * Handle collection deletions.
      *
@@ -146,18 +158,16 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      * responsibility of the administrator to reassign the child branches to the
      * appropriate parent collection.
      */
-    public function hookAfterDeleteCollection($collection)
+    public function hookAfterDeleteCollection($args)
     {
         // Delete the relationship with the parent collection.
-        $collectionTree = $this->_db->getTable('CollectionTree')
-                                              ->findByCollectionId($collection->id);
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
         if ($collectionTree) {
             $collectionTree->delete();
         }
-
+        
         // Move child collections to root level by deleting their relationships.
-        $collectionTrees = $this->_db->getTable('CollectionTree')
-                                     ->findByParentCollectionId($collection->id);
+        $collectionTrees = $this->_db->getTable('CollectionTree')->findByParentCollectionId($args['record']->id);
         foreach ($collectionTrees as  $collectionTree) {
             $collectionTree->delete();
         }
@@ -166,7 +176,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     /**
      * Omit all child collections from the collection browse.
      */
-    public function hookCollectionBrowseSql($select, $params)
+    public function hookCollectionBrowseSql($args)
     {
         if (!is_admin_theme()) {
             $sql = "
@@ -174,58 +184,65 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
                 SELECT nc.collection_id
                 FROM {$this->_db->CollectionTree} nc
             )";
-            $select->where($sql);
+            $args['select']->where($sql);
         }
     }
-
+    
     /**
      * Display the parent collection form.
      */
-    public function hookAdminAppendToCollectionsForm($collection)
+    public function hookAdminCollectionsForm($args)
     {
         $assignableCollections = $this->_db->getTable('CollectionTree')
-                                           ->fetchAssignableParentCollections($collection->id);
+            ->fetchAssignableParentCollections($args['collection']->id);
+        $collectionTable = $this->_db->getTable('Collection');
         $options = array(0 => 'No parent collection');
         foreach ($assignableCollections as $assignableCollection) {
-            $options[$assignableCollection['id']] = $assignableCollection['name'];
+            if ($assignableCollection['name']) {
+                $options[$assignableCollection['id']] = $assignableCollection['name'];
+            } else {
+                $collection = $collectionTable->find($assignableCollection['id']);
+                $options[$assignableCollection['id']] = metadata($collection, array('Dublin Core', 'Title'));
+            }
         }
-        $collectionTree = $this->_db->getTable('CollectionTree')
-                                    ->findByCollectionId($collection->id);
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['collection']->id);
         if ($collectionTree) {
             $parentCollectionId = $collectionTree->parent_collection_id;
         } else {
             $parentCollectionId = null;
         }
 ?>
-<h2>Parent Collection</h2>
-<div class="field">
-    <?php echo __v()->formLabel('collection_tree_parent_collection_id','Select a Parent Collection'); ?>
-    <div class="inputs">
-        <?php echo __v()->formSelect('collection_tree_parent_collection_id',
-                                     $parentCollectionId,
-                                     null,
-                                     $options); ?>
+<section class="seven columns alpha">
+    <h2>Parent Collection</h2>
+    <div class="field">
+        <div id="collection_tree_parent_collection_id_label" class="two columns alpha">
+            <label for="collection_tree_parent_collection_id">Select a Parent Collection</label>
+        </div>
+        <div class="inputs five columns omega">
+            <?php echo get_view()->formSelect('collection_tree_parent_collection_id',
+                $parentCollectionId, null, $options); ?>
+        </div>
     </div>
-</div>
+</section>
 <?php
     }
-
+    
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function hookAdminAppendToCollectionsShowPrimary($collection)
+    public function hookAdminCollectionsShow($args)
     {
-        $this->_appendToCollectionsShow($collection);
+        $this->_appendToCollectionsShow($args['collection']);
     }
-
+    
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function hookPublicAppendToCollectionsShow()
+    public function hookPublicCollectionsShow()
     {
-        $this->_appendToCollectionsShow(get_current_collection());
+        $this->_appendToCollectionsShow(get_current_record('collection'));
     }
-
+    
     protected function _appendToCollectionsShow($collection)
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
@@ -234,16 +251,16 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
 <?php echo self::getCollectionTreeList($collectionTree); ?>
 <?php
     }
-
+    
     /**
      * Add the collection tree page to the admin navigation.
      */
     public function filterAdminNavigationMain($nav)
     {
-        $nav['Collection Tree'] = uri('collection-tree');
+        $nav[] = array('label' => 'Collection Tree', 'uri' => url('collection-tree'));
         return $nav;
     }
-
+    
     /**
      * Add the collection tree page to the public navigation.
      */
@@ -252,7 +269,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         $nav['Collection Tree'] = uri('collection-tree');
         return $nav;
     }
-
+    
     /**
      * Return collection dropdown menu options as a hierarchical tree.
      */
@@ -260,7 +277,7 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     {
         return $this->_db->getTable('CollectionTree')->findPairsForSelectForm();
     }
-
+    
     /**
      * Build a nested HTML unordered list of the full collection tree, starting
      * at root collections.
@@ -271,26 +288,31 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
     public static function getFullCollectionTreeList($linkToCollectionShow = true)
     {
         $rootCollections = get_db()->getTable('CollectionTree')->getRootCollections();
-
+        
         // Return NULL if there are no root collections.
         if (!$rootCollections) {
             return null;
         }
-
-        $html = '<ul style="list-style-type:disc;margin-bottom:0;list-style-position:inside;">';
+        
+        $html = '<ul>';
         foreach ($rootCollections as $rootCollection) {
             $html .= '<li>';
             if ($linkToCollectionShow) {
                 $html .= self::linkToCollectionShow($rootCollection['id']);
             } else {
-                $html .= $rootCollection['name'];
+                if ($rootCollection['name']) {
+                    $html .= $rootCollection['name'];
+                } else {
+                    $collectionObj = get_db()->getTable('Collection')->find($rootCollection['id']);
+                    $html .=  metadata($collectionObj, array('Dublin Core', 'Title'));
+                }
             }
             $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
             $html .= self::getCollectionTreeList($collectionTree, $linkToCollectionShow);
             $html .= '</li>';
         }
         $html .= '</ul>';
-
+        
         return $html;
     }
 
@@ -309,13 +331,18 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
         if (!$collectionTree) {
             return;
         }
-        $html = '<ul style="list-style-type:disc;margin-bottom:0;list-style-position:inside;">';
+        $html = '<ul>';
         foreach ($collectionTree as $collection) {
             $html .= '<li>';
             if ($linkToCollectionShow && !isset($collection['current'])) {
                 $html .= self::linkToCollectionShow($collection['id']);
             } else {
-                $html .= $collection['name'];
+                if ($collection['name']) {
+                    $html .= $collection['name'];
+                } else {
+                    $collectionObj = get_db()->getTable('Collection')->find($collection['id']);
+                    $html .=  metadata($collectionObj, array('Dublin Core', 'Title'));
+                }
             }
             $html .= self::getCollectionTreeList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';
@@ -333,9 +360,6 @@ class CollectionTreePlugin extends Omeka_Plugin_Abstract
      */
     public static function linkToCollectionShow($collectionId)
     {
-        // Require the helpers libraries. This is necessary when calling this
-        // method before the libraries are loaded.
-        require_once HELPERS;
         return link_to_collection(null, array(), 'show',
                                   get_db()->getTable('Collection')->find($collectionId));
     }
