@@ -74,7 +74,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     public function hookUpgrade($args)
     {
         // Prior to Omeka 2.0, collection names were stored in the collections 
-        // table; now they are stored as Dublin Core Title.
+        // table; now they are stored as Dublin Core Title. This upgrade 
+        // compensates for this by moving the collection names to the 
+        // collection_trees table.
         if (version_compare($args['old_version'], '2.0', '<')) {
             
             // Change the storage engine to InnoDB.
@@ -86,21 +88,20 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             $this->_db->query($sql);
             
             // Assign names to their corresponding collection_tree rows.
-            
-            // Fetch all collections and iterate them. Check if the collection 
-            // exists as a collection_tree row. If not, insert a row with 
-            // parent_collection_id = 0. The collection name should be set for 
-            // every row.
-            
-            /*
+            $collectionTreeTable = $this->_db->getTable('CollectionTree');
             $collectionTable = $this->_db->getTable('Collection');
-            $collectionTrees = $this->_db->getTable('CollectionTree')->findAll();
-            foreach ($collectionTrees as $collectionTree) {
-                $collection = $collectionTable->find($collectionTree['collection_id']);
-                $collectionTree->name = metadata($collection, array('Dublin Core', 'Title'));
+            $collections = $this->_db->fetchAll("SELECT * FROM {$this->_db->Collection}");
+            foreach ($collections as $collection) {
+                $collectionTree = $collectionTreeTable->findByCollectionId($collection['id']);
+                if (!$collectionTree) {
+                    $collectionTree = new CollectionTree;
+                    $collectionTree->collection_id = $collection['id'];
+                    $collectionTree->parent_collection_id = 0;
+                }
+                $collectionObj = $collectionTable->find($collection['id']);
+                $collectionTree->name = metadata($collectionObj, array('Dublin Core', 'Title'));
                 $collectionTree->save();
             }
-            */
         }
     }
     
@@ -135,7 +136,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     public function hookBeforeSaveCollection($args)
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
-        
         if (!$collectionTree) {
             return;
         }
