@@ -1,4 +1,16 @@
 <?php
+/**
+ * Collection Tree
+ * 
+ * @copyright Copyright 2007-2012 Roy Rosenzweig Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ */
+
+/**
+ * The Collection Tree plugin.
+ * 
+ * @package Omeka\Plugins\CollectionTree
+ */
 class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
 {
     protected $_hooks = array(
@@ -18,7 +30,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     protected $_filters = array(
         'admin_navigation_main',
         'public_navigation_main',
-        'collection_select_options',
     );
     
     /**
@@ -74,6 +85,13 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             $this->_db->query($sql);
             
             // Assign names to their corresponding collection_tree rows.
+            
+            // Fetch all collections and iterate them. Check if the collection 
+            // exists as a collection_tree row. If not, insert a row with 
+            // parent_collection_id = 0. The collection name should be set for 
+            // every row.
+            
+            /*
             $collectionTable = $this->_db->getTable('Collection');
             $collectionTrees = $this->_db->getTable('CollectionTree')->findAll();
             foreach ($collectionTrees as $collectionTree) {
@@ -81,6 +99,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
                 $collectionTree->name = metadata($collection, array('Dublin Core', 'Title'));
                 $collectionTree->save();
             }
+            */
         }
     }
     
@@ -119,35 +138,21 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
         
-        // Only save the relationship during a form submission.
-        if (!isset($args['post'])) {
-            if ($collectionTree) {
-                // Set the collection name to the tree.
-                $collectionTree->name = metadata($args['record'], array('Dublin Core', 'Title'));
-                $collectionTree->save();
-            }
-            return;
+        if (!$collectionTree) {
+            $collectionTree = new CollectionTree;
+            $collectionTree->collection_id = $args['record']->id;
+            $collectionTree->parent_collection_id = 0;
         }
         
-        // Insert/update the parent/child relationship.
-        if ($args['post']['collection_tree_parent_collection_id']) {
-            
-            // If the collection is not already a child collection, create it.
-            if (!$collectionTree) {
-                $collectionTree = new CollectionTree;
-                $collectionTree->collection_id = $args['record']->id;
-            }
+        // Only save the relationship during a form submission.
+        if (isset($args['post']['collection_tree_parent_collection_id'])) {
             $collectionTree->parent_collection_id = $args['post']['collection_tree_parent_collection_id'];
-            $collectionTree->name = metadata($args['record'], array('Dublin Core', 'Title'));
-            $collectionTree->save();
-            
-        // Delete the parent/child relationship if no parent collection is
-        // specified.
-        } else {
-            if ($collectionTree) {
-                $collectionTree->delete();
-            }
         }
+        
+        $collectionTree->name = metadata($args['record'], array('Dublin Core', 'Title'));
+        
+        // Fail silently if the record does not validate.
+        $collectionTree->save(false);
     }
     
     /**
@@ -169,7 +174,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         // Move child collections to root level by deleting their relationships.
         $collectionTrees = $this->_db->getTable('CollectionTree')->findByParentCollectionId($args['record']->id);
         foreach ($collectionTrees as  $collectionTree) {
-            $collectionTree->delete();
+            $collectionTree->parent_collection_id = 0;
+            $collectionTree->save();
         }
     }
 
@@ -198,13 +204,10 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $collectionTable = $this->_db->getTable('Collection');
         $options = array(0 => 'No parent collection');
         foreach ($assignableCollections as $assignableCollection) {
-            if ($assignableCollection['name']) {
-                $options[$assignableCollection['id']] = $assignableCollection['name'];
-            } else {
-                $collection = $collectionTable->find($assignableCollection['id']);
-                $options[$assignableCollection['id']] = metadata($collection, array('Dublin Core', 'Title'));
-            }
+            $options[$assignableCollection['id']] = $assignableCollection['name'] 
+                ? $assignableCollection['name'] : '[Untitled]';
         }
+        
         $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['collection']->id);
         if ($collectionTree) {
             $parentCollectionId = $collectionTree->parent_collection_id;
@@ -266,16 +269,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterPublicNavigationMain($nav)
     {
-        $nav['Collection Tree'] = uri('collection-tree');
+        $nav[] = array('label' => 'Collection Tree', 'uri' => url('collection-tree'));
         return $nav;
-    }
-    
-    /**
-     * Return collection dropdown menu options as a hierarchical tree.
-     */
-    public function filterCollectionSelectOptions($options)
-    {
-        return $this->_db->getTable('CollectionTree')->findPairsForSelectForm();
     }
     
     /**
@@ -300,12 +295,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             if ($linkToCollectionShow) {
                 $html .= self::linkToCollectionShow($rootCollection['id']);
             } else {
-                if ($rootCollection['name']) {
-                    $html .= $rootCollection['name'];
-                } else {
-                    $collectionObj = get_db()->getTable('Collection')->find($rootCollection['id']);
-                    $html .=  metadata($collectionObj, array('Dublin Core', 'Title'));
-                }
+                $html .= $rootCollection['name'] ? $rootCollection['name'] : '[Untitled]';
             }
             $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
             $html .= self::getCollectionTreeList($collectionTree, $linkToCollectionShow);
@@ -337,12 +327,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             if ($linkToCollectionShow && !isset($collection['current'])) {
                 $html .= self::linkToCollectionShow($collection['id']);
             } else {
-                if ($collection['name']) {
-                    $html .= $collection['name'];
-                } else {
-                    $collectionObj = get_db()->getTable('Collection')->find($collection['id']);
-                    $html .=  metadata($collectionObj, array('Dublin Core', 'Title'));
-                }
+                $html .= $collection['name'] ? $collection['name'] : '[Untitled]';
             }
             $html .= self::getCollectionTreeList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';

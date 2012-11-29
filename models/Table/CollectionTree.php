@@ -1,5 +1,17 @@
 <?php
-class CollectionTreeTable extends Omeka_Db_Table
+/**
+ * Collection Tree
+ * 
+ * @copyright Copyright 2007-2012 Roy Rosenzweig Center for History and New Media
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
+ */
+
+/**
+ * The collection_trees table.
+ * 
+ * @package Omeka\Plugins\CollectionTree
+ */
+class Table_CollectionTree extends Omeka_Db_Table
 {
     /**
      * Cache of all collections, including table and hierarchy data.
@@ -8,7 +20,7 @@ class CollectionTreeTable extends Omeka_Db_Table
      * collection data.
      */
     protected $_collections;
-
+    
     /**
      * Cache of variables needed for some use.
      *
@@ -19,7 +31,7 @@ class CollectionTreeTable extends Omeka_Db_Table
      * @see self::getDescendantTree()
      */
     protected $_cache = array();
-
+    
     /**
      * Fetch all collections that can be assigned as a parent collection to the
      * specified collection.
@@ -33,17 +45,17 @@ class CollectionTreeTable extends Omeka_Db_Table
     public function fetchAssignableParentCollections($collectionId)
     {
         $db = $this->getDb();
-
+        
         // Must cast null collection ID to 0 to properly bind.
         $collectionId = (int) $collectionId;
-
+        
         $sql = "
-        SELECT c.*, nc.name
+        SELECT c.*, ct.name
         FROM {$db->Collection} c
-        LEFT JOIN {$db->CollectionTree} nc
-        ON c.id = nc.collection_id
+        LEFT JOIN {$db->CollectionTree} ct
+        ON c.id = ct.collection_id
         WHERE c.id != ?";
-
+        
         // If not a new collection, cache descendant collection IDs and exclude
         // those collections from the result.
         if ($collectionId) {
@@ -54,10 +66,15 @@ class CollectionTreeTable extends Omeka_Db_Table
             }
             $this->_resetCache();
         }
-
+        
+        // Order alphabetically if configured to do so.
+        if (get_option('collection_tree_alpha_order')) {
+            $sql .= ' ORDER BY ct.name';
+        }
+        
         return $db->fetchAll($sql, array((int) $collectionId));
     }
-
+    
     /**
      * Find parent/child relationship by collection ID.
      *
@@ -67,16 +84,16 @@ class CollectionTreeTable extends Omeka_Db_Table
     public function findByCollectionId($collectionId)
     {
         $db = $this->getDb();
-
+        
         $sql = "
         SELECT *
         FROM {$db->CollectionTree}
         WHERE collection_id = ?";
-
+        
         // Child collection IDs are unique, so only fetch one row.
         return $this->fetchObject($sql, array($collectionId));
     }
-
+    
     /**
      * Find parent/child relationships by parent collection ID.
      *
@@ -86,15 +103,15 @@ class CollectionTreeTable extends Omeka_Db_Table
     public function findByParentCollectionId($parentCollectionId)
     {
         $db = $this->getDb();
-
+        
         $sql = "
         SELECT *
         FROM {$db->CollectionTree}
         WHERE parent_collection_id = ?";
-
+        
         return $this->fetchObjects($sql, array($parentCollectionId));
     }
-
+    
     /**
      * Cache collection data.
      */
@@ -102,24 +119,24 @@ class CollectionTreeTable extends Omeka_Db_Table
     {
         $db = $this->getDb();
         $sql = "
-        SELECT c.*, nc.parent_collection_id, nc.name
+        SELECT c.*, ct.parent_collection_id, ct.name
         FROM {$db->Collection} c
-        LEFT JOIN {$db->CollectionTree} nc
-        ON c.id = nc.collection_id";
-
+        LEFT JOIN {$db->CollectionTree} ct
+        ON c.id = ct.collection_id";
+        
         // Cache only those collections to which the current user has access.
         if (!get_acl()->isAllowed(current_user(), 'Collections', 'showNotPublic')) {
             $sql .= ' WHERE c.public = 1';
         }
-
+        
         // Order alphabetically if configured to do so.
         if (get_option('collection_tree_alpha_order')) {
-            $sql .= ' ORDER BY nc.name';
+            $sql .= ' ORDER BY ct.name';
         }
         
         $this->_collections = $db->fetchAll($sql);
     }
-
+    
     /**
      * Return the collection tree hierarchy as a one-dimensional array.
      *
@@ -129,23 +146,24 @@ class CollectionTreeTable extends Omeka_Db_Table
     public function findPairsForSelectForm($padding = '-')
     {
         $options = array();
-
+        
         foreach ($this->getRootCollections() as $rootCollection) {
-
-            $options[$rootCollection['id']] = $rootCollection['name'];
-
+            
+            $options[$rootCollection['id']] = $rootCollection['name'] ? $rootCollection['name'] : '[Untitled]';
+            
             $this->_resetCache();
             $this->getDescendantTree($rootCollection['id'], true);
             foreach ($this->_cache as $collectionId => $collectionDepth) {
                 $collection = $this->getCollection($collectionId);
-                $options[$collectionId] = str_repeat($padding, $collectionDepth) . ' ' .$collection['name'];
+                $options[$collectionId] = str_repeat($padding, $collectionDepth) . ' ';
+                $options[$collectionId] .= $collection['name'] ? $collection['name'] : '[Untitled]';
             }
         }
         $this->_resetCache();
-
+        
         return $options;
     }
-
+    
     /**
      * Get the entire collection tree of the specified collection.
      *
@@ -156,7 +174,7 @@ class CollectionTreeTable extends Omeka_Db_Table
     {
         return $this->getAncestorTree($collectionId, true);
     }
-
+    
     /**
      * Get the ancestor tree or the entire collection tree of the specified
      * collection.
@@ -169,45 +187,45 @@ class CollectionTreeTable extends Omeka_Db_Table
     public function getAncestorTree($collectionId, $getCollectionTree = false)
     {
         $tree = array();
-
+        
         // Distinguish between the passed collection and its descendants.
         $parentCollectionId = $collectionId;
-
+        
         // Iterate the parent collections, starting with the passed collection
         // and stopping at the root collection.
         do {
             $collection = $this->getCollection($parentCollectionId);
             $parentCollectionId = $collection['parent_collection_id'];
-
+            
             // Don't include the passed collection when not building the entire
             // collection tree.
             if (!$getCollectionTree && $collectionId == $collection['id']) {
                 continue;
             }
-
+            
             // If set to return the entire collection tree, add the descendant
             // tree to the passed collection and flag it as current.
             if ($getCollectionTree && $collectionId == $collection['id']) {
                 $collection['children'] = $this->getDescendantTree($collection['id']);
                 $collection['current'] = true;
             }
-
+            
             // Prepend the parent collection to the collection tree, pushing the
             // descendant tree to the second element.
             array_unshift($tree, $collection);
-
+            
             // Save the descendant tree as children of the parent collection and
             // remove the extraneous descendant tree.
             if (isset($tree[1])) {
                 $tree[0]['children'] = array($tree[1]);
                 unset($tree[1]);
             }
-
+            
         } while ($collection['parent_collection_id']);
-
+        
         return $tree;
     }
-
+    
     /**
      * Recursively get the descendant tree of the specified collection.
      *
@@ -217,25 +235,24 @@ class CollectionTreeTable extends Omeka_Db_Table
      * @param int $collectionDepth The initial depth of the collection.
      * @return array
      */
-    public function getDescendantTree($collectionId, $cacheDescendantInfo = false,
-        $collectionDepth = 0
-    ) {
+    public function getDescendantTree($collectionId, $cacheDescendantInfo = false, $collectionDepth = 0)
+    {
         // Increment the collection depth.
         $collectionDepth++;
-
+        
         // Iterate the child collections.
         $descendantTree = $this->getChildCollections($collectionId);
         for ($i = 0; $i < count($descendantTree); $i++) {
-
+            
             if ($cacheDescendantInfo) {
                 $this->_cache[$descendantTree[$i]['id']] = $collectionDepth;
             }
-
+            
             // Recurse the child collections, getting their children.
             $children = $this->getDescendantTree($descendantTree[$i]['id'],
                                                  $cacheDescendantInfo,
                                                  $collectionDepth);
-
+            
             // Assign the child collections to the descendant tree.
             if ($children) {
                 $descendantTree[$i]['children'] = $children;
@@ -243,10 +260,10 @@ class CollectionTreeTable extends Omeka_Db_Table
                 $descendantTree[$i]['children'] = array();
             }
         }
-
+        
         return $descendantTree;
     }
-
+    
     /**
      * Get the specified collection.
      *
@@ -259,7 +276,7 @@ class CollectionTreeTable extends Omeka_Db_Table
         if (!$this->_collections) {
             $this->cacheCollections();
         }
-
+        
         foreach ($this->_collections as $collection) {
             if ($collectionId == $collection['id']) {
                 return $collection;
@@ -267,7 +284,7 @@ class CollectionTreeTable extends Omeka_Db_Table
         }
         return false;
     }
-
+    
     /**
      * Get the child collections of the specified collection.
      *
@@ -280,7 +297,7 @@ class CollectionTreeTable extends Omeka_Db_Table
         if (!$this->_collections) {
             $this->cacheCollections();
         }
-
+        
         $childCollections = array();
         foreach ($this->_collections as $collection) {
             if ($collectionId == $collection['parent_collection_id']) {
@@ -289,7 +306,7 @@ class CollectionTreeTable extends Omeka_Db_Table
         }
         return $childCollections;
     }
-
+    
     /**
      * Get all root collections, i.e. those without parent collections.
      *
@@ -301,7 +318,7 @@ class CollectionTreeTable extends Omeka_Db_Table
         if (!$this->_collections) {
             $this->cacheCollections();
         }
-
+        
         $rootCollections = array();
         foreach ($this->_collections as $collection) {
             if (!$collection['parent_collection_id']) {
@@ -310,7 +327,7 @@ class CollectionTreeTable extends Omeka_Db_Table
         }
         return $rootCollections;
     }
-
+    
     /**
      * Reset the cache property.
      */
