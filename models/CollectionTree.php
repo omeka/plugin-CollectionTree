@@ -22,8 +22,12 @@ class CollectionTree extends Omeka_Record_AbstractRecord
      */
     protected function _validate()
     {
-        if ($this->collection_id == $this->parent_collection_id) {
-            $this->addError('Parent Collection', 'A collection cannot be a parent to itself.');
+        $unassignableCollectionIds = $this->getTable()->getUnassignableCollectionIds($this->collection_id);
+        if (in_array($this->parent_collection_id, $unassignableCollectionIds)) {
+            $this->addError(
+                'collection_tree_parent_collection_id', 
+                'A collection cannot be a parent to itself, nor can it be assigned to a collection in its descendant tree.'
+            );
         }
     }
 }

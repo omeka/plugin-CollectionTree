@@ -19,6 +19,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'upgrade',
         'config_form',
         'config',
+        'before_save_collection',
         'after_save_collection',
         'after_delete_collection',
         'collection_browse_sql',
@@ -131,6 +132,23 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         set_option('collection_tree_alpha_order', $_POST['collection_tree_alpha_order']);
     }
     
+    public function hookBeforeSaveCollection($args)
+    {
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
+        
+        if (!$collectionTree) {
+            return;
+        }
+        
+        // Only validate the relationship during a form submission.
+        if (isset($args['post']['collection_tree_parent_collection_id'])) {
+            $collectionTree->parent_collection_id = $args['post']['collection_tree_parent_collection_id'];
+            if (!$collectionTree->isValid()) {
+                $args['record']->addErrorsFrom($collectionTree);
+            }
+        }
+    }
+    
     /**
      * Save the parent/child relationship.
      */
@@ -152,7 +170,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $collectionTree->name = metadata($args['record'], array('Dublin Core', 'Title'));
         
         // Fail silently if the record does not validate.
-        $collectionTree->save(false);
+        $collectionTree->save();
     }
     
     /**
@@ -165,14 +183,16 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAfterDeleteCollection($args)
     {
+        $collectionTreeTable = $this->_db->getTable('CollectionTree');
+        
         // Delete the relationship with the parent collection.
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
+        $collectionTree = $collectionTreeTable->findByCollectionId($args['record']->id);
         if ($collectionTree) {
             $collectionTree->delete();
         }
         
         // Move child collections to root level by deleting their relationships.
-        $collectionTrees = $this->_db->getTable('CollectionTree')->findByParentCollectionId($args['record']->id);
+        $collectionTrees = $collectionTreeTable->findByParentCollectionId($args['record']->id);
         foreach ($collectionTrees as  $collectionTree) {
             $collectionTree->parent_collection_id = 0;
             $collectionTree->save();
@@ -187,8 +207,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         if (!is_admin_theme()) {
             $sql = "
             c.id NOT IN (
-                SELECT nc.collection_id
-                FROM {$this->_db->CollectionTree} nc
+                SELECT ct.collection_id
+                FROM {$this->_db->CollectionTree} ct
             )";
             $args['select']->where($sql);
         }
@@ -199,16 +219,12 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAdminCollectionsForm($args)
     {
-        $assignableCollections = $this->_db->getTable('CollectionTree')
-            ->fetchAssignableParentCollections($args['collection']->id);
-        $collectionTable = $this->_db->getTable('Collection');
-        $options = array(0 => 'No parent collection');
-        foreach ($assignableCollections as $assignableCollection) {
-            $options[$assignableCollection['id']] = $assignableCollection['name'] 
-                ? $assignableCollection['name'] : '[Untitled]';
-        }
+        $collectionTreeTable = $this->_db->getTable('CollectionTree');
         
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['collection']->id);
+        $options = $collectionTreeTable->findPairsForSelectForm();
+        $options[0] = 'No parent collection';
+        
+        $collectionTree = $collectionTreeTable->findByCollectionId($args['collection']->id);
         if ($collectionTree) {
             $parentCollectionId = $collectionTree->parent_collection_id;
         } else {
@@ -222,6 +238,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             <label for="collection_tree_parent_collection_id">Select a Parent Collection</label>
         </div>
         <div class="inputs five columns omega">
+            <p class="explanation">A collection cannot be a parent to itself, nor 
+            can it be assigned to a collection in its descendant tree.</p>
             <?php echo get_view()->formSelect('collection_tree_parent_collection_id',
                 $parentCollectionId, null, $options); ?>
         </div>

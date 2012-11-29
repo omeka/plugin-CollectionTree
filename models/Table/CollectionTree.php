@@ -59,12 +59,10 @@ class Table_CollectionTree extends Omeka_Db_Table
         // If not a new collection, cache descendant collection IDs and exclude
         // those collections from the result.
         if ($collectionId) {
-            $this->_resetCache();
-            $this->getDescendantTree($collectionId, true);
-            if ($this->_cache) {
-                $sql .= " AND c.id NOT IN (" . implode(', ', array_keys($this->_cache)) . ")";
+            $unassignableCollectionIds = $this->getUnassignableCollectionIds();
+            if ($unassignableCollectionIds) {
+                $sql .= " AND c.id NOT IN (" . implode(', ', $unassignableCollectionIds) . ")";
             }
-            $this->_resetCache();
         }
         
         // Order alphabetically if configured to do so.
@@ -326,6 +324,24 @@ class Table_CollectionTree extends Omeka_Db_Table
             }
         }
         return $rootCollections;
+    }
+    
+    /**
+     * Get all collection IDs to which the passed collection cannot be assigned.
+     * 
+     * A collection cannot be assigned to a collection in its descendant tree, 
+     * including itself.
+     * 
+     * @param int $collectionId
+     * @return array
+     */
+    public function getUnassignableCollectionIds($collectionId)
+    {
+        $this->_resetCache();
+        $this->getDescendantTree($collectionId, true);
+        $unassignableCollections = array_keys($this->_cache);
+        $this->_resetCache();
+        return $unassignableCollections;
     }
     
     /**
