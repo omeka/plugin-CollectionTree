@@ -1,7 +1,4 @@
-<?php
-$head = array('title' => 'Collection Tree');
-echo head($head);
-?>
+<?php echo head(array('title' => 'Collection Tree')); ?>
 <?php if ($this->full_collection_tree): ?>
 <?php echo $this->full_collection_tree; ?>
 <?php else: ?>
