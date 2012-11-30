@@ -15,6 +15,6 @@ class CollectionTree_IndexController extends Omeka_Controller_AbstractActionCont
 {
     public function indexAction()
     {
-        $this->view->full_collection_tree = CollectionTreePlugin::getFullCollectionTreeList();
+        $this->view->full_collection_tree = $this->view->fullCollectionTreeList();
     }
 }
