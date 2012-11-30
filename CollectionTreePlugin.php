@@ -74,7 +74,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookInitialize()
     {
-        get_view()->addHelperPath(dirname(__FILE__) . '/views/helpers', 'Omeka_View_Helper_');
+        get_view()->addHelperPath(dirname(__FILE__) . '/views/helpers', 'CollectionTree_View_Helper_');
     }
     
     /**

@@ -7,9 +7,9 @@
  */
 
 /**
- * @package Omeka\View\Helper
+ * @package CollectionTree\View\Helper
  */
-class Omeka_View_Helper_CollectionTreeList extends Zend_View_Helper_Abstract
+class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abstract
 {
     /**
      * Recursively build a nested HTML unordered list from the provided
