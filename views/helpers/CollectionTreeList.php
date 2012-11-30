@@ -28,7 +28,7 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
             return;
         }
         $collectionTable = get_db()->getTable('Collection');
-        $html = '<ul id="collection-tree-list">';
+        $html = '<ul>';
         foreach ($collectionTree as $collection) {
             $html .= '<li>';
             if ($linkToCollectionShow && !isset($collection['current'])) {

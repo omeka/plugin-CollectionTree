@@ -26,7 +26,7 @@ class CollectionTree_View_Helper_FullCollectionTreeList extends Zend_View_Helper
             return null;
         }
         $collectionTable = get_db()->getTable('Collection');
-        $html = '<ul id="collection-tree-full-list">';
+        $html = '<div id="collection-tree"><ul>';
         foreach ($rootCollections as $rootCollection) {
             $html .= '<li>';
             if ($linkToCollectionShow) {
@@ -38,7 +38,7 @@ class CollectionTree_View_Helper_FullCollectionTreeList extends Zend_View_Helper
             $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow);
             $html .= '</li>';
         }
-        $html .= '</ul>';
+        $html .= '</ul></div>';
         return $html;
     }
 }
