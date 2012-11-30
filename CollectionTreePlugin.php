@@ -70,11 +70,15 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     }
     
     /**
-     * Add the view helper directory to the stack.
+     * Initialize the plugin.
      */
     public function hookInitialize()
     {
+        // Add the view helper directory to the stack.
         get_view()->addHelperPath(dirname(__FILE__) . '/views/helpers', 'CollectionTree_View_Helper_');
+        
+        // Add translation.
+        add_translation_source(dirname(__FILE__) . '/languages');
     }
     
     /**
@@ -122,11 +126,11 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
 ?>
 <div class="field">
     <div id="collection_tree_alpha_order_label" class="two columns alpha">
-        <label for="collection_tree_alpha_order">Order alphabetically?</label>
+        <label for="collection_tree_alpha_order"><?php echo __('Order alphabetically?'); ?></label>
     </div>
     <div class="inputs five columns omega">
-        <p class="explanation">Order the collection tree alphabetically? This does 
-        not affect the order of the collections browse page.</p>
+        <p class="explanation"><?php echo __('Order the collection tree alphabetically? ' 
+        . 'This does not affect the order of the collections browse page.'); ?></p>
         <?php echo get_view()->formCheckbox('collection_tree_alpha_order', null, 
         array('checked' => (bool) get_option('collection_tree_alpha_order'))); ?>
     </div>
@@ -241,14 +245,14 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         }
 ?>
 <section class="seven columns alpha">
-    <h2>Parent Collection</h2>
+    <h2><?php echo __('Parent Collection'); ?></h2>
     <div class="field">
         <div id="collection_tree_parent_collection_id_label" class="two columns alpha">
-            <label for="collection_tree_parent_collection_id">Select a Parent Collection</label>
+            <label for="collection_tree_parent_collection_id"><?php echo __('Select a Parent Collection'); ?></label>
         </div>
         <div class="inputs five columns omega">
-            <p class="explanation">A collection cannot be a parent to itself, nor 
-            can it be assigned to a collection in its descendant tree.</p>
+            <p class="explanation"><?php echo __('A collection cannot be a parent ' 
+            . 'to itself, nor can it be assigned to a collection in its descendant tree.'); ?></p>
             <?php echo get_view()->formSelect('collection_tree_parent_collection_id',
                 $parentCollectionId, null, $options); ?>
         </div>
@@ -277,7 +281,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
 ?>
-<h2>Collection Tree</h2>
+<h2><?php echo __('Collection Tree'); ?></h2>
 <?php echo get_view()->collectionTreeList($collectionTree); ?>
 <?php
     }
@@ -287,7 +291,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterAdminNavigationMain($nav)
     {
-        $nav[] = array('label' => 'Collection Tree', 'uri' => url('collection-tree'));
+        $nav[] = array('label' => __('Collection Tree'), 'uri' => url('collection-tree'));
         return $nav;
     }
     
@@ -296,7 +300,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterPublicNavigationMain($nav)
     {
-        $nav[] = array('label' => 'Collection Tree', 'uri' => url('collection-tree'));
+        $nav[] = array('label' => __('Collection Tree'), 'uri' => url('collection-tree'));
         return $nav;
     }
 }
