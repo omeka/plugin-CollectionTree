@@ -123,19 +123,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookConfigForm()
     {
-?>
-<div class="field">
-    <div id="collection_tree_alpha_order_label" class="two columns alpha">
-        <label for="collection_tree_alpha_order"><?php echo __('Order alphabetically?'); ?></label>
-    </div>
-    <div class="inputs five columns omega">
-        <p class="explanation"><?php echo __('Order the collection tree alphabetically? ' 
-        . 'This does not affect the order of the collections browse page.'); ?></p>
-        <?php echo get_view()->formCheckbox('collection_tree_alpha_order', null, 
-        array('checked' => (bool) get_option('collection_tree_alpha_order'))); ?>
-    </div>
-</div>
-<?php
+        echo get_view()->partial('plugins/collection-tree-config-form.php');
     }
     
     /**
@@ -243,22 +231,10 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         } else {
             $parentCollectionId = null;
         }
-?>
-<section class="seven columns alpha">
-    <h2><?php echo __('Parent Collection'); ?></h2>
-    <div class="field">
-        <div id="collection_tree_parent_collection_id_label" class="two columns alpha">
-            <label for="collection_tree_parent_collection_id"><?php echo __('Select a Parent Collection'); ?></label>
-        </div>
-        <div class="inputs five columns omega">
-            <p class="explanation"><?php echo __('A collection cannot be a parent ' 
-            . 'to itself, nor can it be assigned to a collection in its descendant tree.'); ?></p>
-            <?php echo get_view()->formSelect('collection_tree_parent_collection_id',
-                $parentCollectionId, null, $options); ?>
-        </div>
-    </div>
-</section>
-<?php
+        echo get_view()->partial(
+            'collections/collection-tree-parent-form.php', 
+            array('options' => $options, 'parent_collection_id' => $parentCollectionId)
+        );
     }
     
     /**
@@ -280,10 +256,10 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     protected function _appendToCollectionsShow($collection)
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
-?>
-<h2><?php echo __('Collection Tree'); ?></h2>
-<?php echo get_view()->collectionTreeList($collectionTree); ?>
-<?php
+        echo get_view()->partial(
+            'collections/collection-tree-list.php', 
+            array('collection_tree' => $collectionTree)
+        );
     }
     
     /**
