@@ -56,6 +56,18 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $this->_db->query($sql);
         
         set_option('collection_tree_alpha_order', '0');
+        
+        // Save all collections in the collection_trees table.
+        $collectionTable = $this->_db->getTable('Collection');
+        $collections = $this->_db->fetchAll("SELECT id FROM {$this->_db->Collection}");
+        foreach ($collections as $collection) {
+            $collectionObj = $collectionTable->find($collection['id']);
+            $collectionTree = new CollectionTree;
+            $collectionTree->parent_collection_id = 0;
+            $collectionTree->collection_id = $collection['id'];
+            $collectionTree->name = metadata($collectionObj, array('Dublin Core', 'Title'));
+            $collectionTree->save();
+        }
     }
     
     /**
@@ -103,7 +115,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             // Assign names to their corresponding collection_tree rows.
             $collectionTreeTable = $this->_db->getTable('CollectionTree');
             $collectionTable = $this->_db->getTable('Collection');
-            $collections = $this->_db->fetchAll("SELECT * FROM {$this->_db->Collection}");
+            $collections = $this->_db->fetchAll("SELECT id FROM {$this->_db->Collection}");
             foreach ($collections as $collection) {
                 $collectionTree = $collectionTreeTable->findByCollectionId($collection['id']);
                 if (!$collectionTree) {
