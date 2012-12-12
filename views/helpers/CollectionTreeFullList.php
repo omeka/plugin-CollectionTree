@@ -9,7 +9,7 @@
 /**
  * @package CollectionTree\View\Helper
  */
-class CollectionTree_View_Helper_FullCollectionTreeList extends Zend_View_Helper_Abstract
+class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper_Abstract
 {
     /**
      * Build a nested HTML unordered list of the full collection tree, starting
@@ -18,7 +18,7 @@ class CollectionTree_View_Helper_FullCollectionTreeList extends Zend_View_Helper
      * @param bool $linkToCollectionShow
      * @return string|null
      */
-    public function fullCollectionTreeList($linkToCollectionShow = true)
+    public function collectionTreeFullList($linkToCollectionShow = true)
     {
         $rootCollections = get_db()->getTable('CollectionTree')->getRootCollections();
         // Return NULL if there are no root collections.
