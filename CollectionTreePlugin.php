@@ -104,10 +104,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         // collection_trees table.
         if (version_compare($args['old_version'], '2.0', '<')) {
             
-            // Change the storage engine to InnoDB.
-            $sql = "ALTER TABLE {$this->_db->CollectionTree} ENGINE = INNODB";
-            $this->_db->query($sql);
-            
             // Add the name column to the collection_trees table.
             $sql = "ALTER TABLE {$this->_db->CollectionTree} ADD `name` TEXT NULL";
             $this->_db->query($sql);
