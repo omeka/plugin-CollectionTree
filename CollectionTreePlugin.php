@@ -86,9 +86,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookInitialize()
     {
-        // Add the view helper directory to the stack.
-        get_view()->addHelperPath(dirname(__FILE__) . '/views/helpers', 'CollectionTree_View_Helper_');
-        
         // Add translation.
         add_translation_source(dirname(__FILE__) . '/languages');
     }
