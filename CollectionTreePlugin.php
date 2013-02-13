@@ -234,7 +234,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         if ($collectionTree) {
             $parentCollectionId = $collectionTree->parent_collection_id;
         } else {
-            $parentCollectionId = null;
+            $parentCollectionId = 0;
         }
         echo get_view()->partial(
             'collections/collection-tree-parent-form.php', 
