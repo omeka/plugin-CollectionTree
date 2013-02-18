@@ -24,7 +24,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'after_save_collection',
         'after_delete_collection',
         'collection_browse_sql',
-        'admin_collections_form',
         'admin_collections_show',
         'public_collections_show',
     );
@@ -32,6 +31,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     protected $_filters = array(
         'admin_navigation_main',
         'public_navigation_main',
+        'admin_collections_form_tabs',
     );
     
     /**
@@ -221,28 +221,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     }
     
     /**
-     * Display the parent collection form.
-     */
-    public function hookAdminCollectionsForm($args)
-    {
-        $collectionTreeTable = $this->_db->getTable('CollectionTree');
-        
-        $options = $collectionTreeTable->findPairsForSelectForm();
-        $options[0] = 'No parent collection';
-        
-        $collectionTree = $collectionTreeTable->findByCollectionId($args['collection']->id);
-        if ($collectionTree) {
-            $parentCollectionId = $collectionTree->parent_collection_id;
-        } else {
-            $parentCollectionId = 0;
-        }
-        echo get_view()->partial(
-            'collections/collection-tree-parent-form.php', 
-            array('options' => $options, 'parent_collection_id' => $parentCollectionId)
-        );
-    }
-    
-    /**
      * Display the collection's parent collection and child collections.
      */
     public function hookAdminCollectionsShow($args)
@@ -283,5 +261,28 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     {
         $nav[] = array('label' => __('Collection Tree'), 'uri' => url('collection-tree'));
         return $nav;
+    }
+    
+    /**
+     * Display the parent collection form.
+     */
+    public function filterAdminCollectionsFormTabs($tabs, $args)
+    {
+        $collectionTreeTable = $this->_db->getTable('CollectionTree');
+        
+        $options = $collectionTreeTable->findPairsForSelectForm();
+        $options[0] = 'No parent collection';
+        
+        $collectionTree = $collectionTreeTable->findByCollectionId($args['collection']->id);
+        if ($collectionTree) {
+            $parentCollectionId = $collectionTree->parent_collection_id;
+        } else {
+            $parentCollectionId = 0;
+        }
+        $tabs['Parent Collection'] = get_view()->partial(
+            'collections/collection-tree-parent-form.php', 
+            array('options' => $options, 'parent_collection_id' => $parentCollectionId)
+        );
+        return $tabs;
     }
 }
