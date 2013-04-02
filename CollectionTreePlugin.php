@@ -271,7 +271,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $collectionTreeTable = $this->_db->getTable('CollectionTree');
         
         $options = $collectionTreeTable->findPairsForSelectForm();
-        $options[0] = 'No parent collection';
+        $options = array('0' => __('No parent collection')) + $options;
         
         $collectionTree = $collectionTreeTable->findByCollectionId($args['collection']->id);
         if ($collectionTree) {
