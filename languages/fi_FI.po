@@ -1,0 +1,66 @@
+# Translation for the Collection Tree plugin for Omeka.
+# Copyright (C) 2012 Roy Rosenzweig Center for History and New Media
+# This file is distributed under the same license as the Omeka package.
+# 
+# Translators:
+# Matti Lassila <matti.lassila@gmail.com>, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: Omeka\n"
+"Report-Msgid-Bugs-To: https://github.com/omeka/Omeka/issues\n"
+"POT-Creation-Date: 2012-11-30 21:49-0500\n"
+"PO-Revision-Date: 2013-06-03 20:17+0000\n"
+"Last-Translator: Matti Lassila <matti.lassila@gmail.com>\n"
+"Language-Team: Finnish (Finland) (http://www.transifex.com/projects/p/omeka/language/fi_FI/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fi_FI\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: CollectionTreePlugin.php:253 CollectionTreePlugin.php:262
+#: views/shared/collections/collection-tree-list.php:1
+#: views/shared/index/index.php:1
+msgid "Collection Tree"
+msgstr "Kokoelmahierarkia"
+
+#: CollectionTreePlugin.php:274
+msgid "No parent collection"
+msgstr "Ei ylätason kokoelmaa"
+
+#: models/CollectionTree.php:27 models/CollectionTree.php:35
+msgid "Parent Collection"
+msgstr "Ylätason kokoelma"
+
+#: models/CollectionTree.php:28
+msgid "A collection cannot be a parent to itself."
+msgstr "Kokoelma ei voi olla ylätason kokoelma suhteessa itseensä."
+
+#: models/CollectionTree.php:36
+msgid ""
+"A collection cannot be assigned to a collection in its descendant tree."
+msgstr "Kokoelmaa ei voi yhdistää kokoelmaan joka sijaitsee alempana samassa hierarkiassa."
+
+#: views/admin/collections/collection-tree-parent-form.php:3
+msgid "Select a Parent Collection"
+msgstr "Valitse ylätason kokoelma"
+
+#: views/admin/collections/collection-tree-parent-form.php:6
+msgid ""
+"A collection cannot be a parent to itself, nor can it be assigned to a "
+"collection in its descendant tree."
+msgstr "Kokoelma ei voi olla ylätaso-suhteessa itseensä eikä kokoelmahierarkiassa nyt  alempana oleva kokoelma voi olla kokoelman ylätason kokoelma."
+
+#: views/admin/plugins/collection-tree-config-form.php:3
+msgid "Order alphabetically?"
+msgstr "Järjestä aakkosellisesti?"
+
+#: views/admin/plugins/collection-tree-config-form.php:6
+msgid ""
+"Order the collection tree alphabetically? This does not affect the order of "
+"the collections browse page."
+msgstr "Kokoelmahierarkian järjestäminen aakkosellisesti. Kokoelmahierarkian järjestys ei vaikuta kokoelmien selausnäkymän järjestykseen."
+
+#: views/shared/index/index.php:5
+msgid "There are no collections."
+msgstr "Ei kokoelmia."

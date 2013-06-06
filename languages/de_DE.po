@@ -1,0 +1,66 @@
+# Translation for the Collection Tree plugin for Omeka.
+# Copyright (C) 2012 Roy Rosenzweig Center for History and New Media
+# This file is distributed under the same license as the Omeka package.
+# 
+# Translators:
+# Wasilis Mandratzis <m.wasilis@yahoo.de>, 2013
+msgid ""
+msgstr ""
+"Project-Id-Version: Omeka\n"
+"Report-Msgid-Bugs-To: https://github.com/omeka/Omeka/issues\n"
+"POT-Creation-Date: 2012-11-30 21:49-0500\n"
+"PO-Revision-Date: 2013-05-24 01:02+0000\n"
+"Last-Translator: Wasilis Mandratzis <m.wasilis@yahoo.de>\n"
+"Language-Team: German (Germany) (http://www.transifex.com/projects/p/omeka/language/de_DE/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: CollectionTreePlugin.php:253 CollectionTreePlugin.php:262
+#: views/shared/collections/collection-tree-list.php:1
+#: views/shared/index/index.php:1
+msgid "Collection Tree"
+msgstr "Sammlung"
+
+#: CollectionTreePlugin.php:274
+msgid "No parent collection"
+msgstr "Keine Sammlung"
+
+#: models/CollectionTree.php:27 models/CollectionTree.php:35
+msgid "Parent Collection"
+msgstr "Erstsammlung"
+
+#: models/CollectionTree.php:28
+msgid "A collection cannot be a parent to itself."
+msgstr "Eine Sammlung kann nicht die Erstsammlung ihrer selbst sein."
+
+#: models/CollectionTree.php:36
+msgid ""
+"A collection cannot be assigned to a collection in its descendant tree."
+msgstr "Eine Sammlung kann nicht in einer Sammlung der Nachfolgesammlung auftreten."
+
+#: views/admin/collections/collection-tree-parent-form.php:3
+msgid "Select a Parent Collection"
+msgstr "Eine Erstsammlung auswählen"
+
+#: views/admin/collections/collection-tree-parent-form.php:6
+msgid ""
+"A collection cannot be a parent to itself, nor can it be assigned to a "
+"collection in its descendant tree."
+msgstr "Eine Sammlung kann nicht in einer Sammlung der Nachfolgesammlung auftreten."
+
+#: views/admin/plugins/collection-tree-config-form.php:3
+msgid "Order alphabetically?"
+msgstr "Alphabetisch sortieren?"
+
+#: views/admin/plugins/collection-tree-config-form.php:6
+msgid ""
+"Order the collection tree alphabetically? This does not affect the order of "
+"the collections browse page."
+msgstr "Soll die Sammlung alphabetisch sortiert werden? Dies hat keinen Einfluss auf die Reihenfolge der Sammlungen der durchsuchten Seite."
+
+#: views/shared/index/index.php:5
+msgid "There are no collections."
+msgstr "Es existieren keine Sammlungen. "
