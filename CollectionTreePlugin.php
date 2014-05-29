@@ -13,6 +13,9 @@
  */
 class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
 {
+    /**
+     * @var array Hooks for the plugin.
+     */
     protected $_hooks = array(
         'install',
         'uninstall',
@@ -28,10 +31,14 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'public_collections_show',
     );
 
+    /**
+     * @var array Filters for the plugin.
+     */
     protected $_filters = array(
         'admin_navigation_main',
         'public_navigation_main',
         'admin_collections_form_tabs',
+        'collections_select_options',
     );
     
     /**
@@ -284,5 +291,18 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             array('options' => $options, 'parent_collection_id' => $parentCollectionId)
         );
         return $tabs;
+    }
+
+    /**
+     * Manage search options for collections.
+     *
+     * @param array Search options for collections.
+     * @return array Filtered search options for collections.
+     */
+    public function filterCollectionsSelectOptions($options)
+    {
+        $treeOptions = $this->_db->getTable('CollectionTree')->findPairsForSelectForm();
+        // Keep only chosen collections, in case another filter removed some.
+        return array_intersect_key($treeOptions, $options);
     }
 }
