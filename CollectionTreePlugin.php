@@ -26,7 +26,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'before_save_collection',
         'after_save_collection',
         'after_delete_collection',
-        'collection_browse_sql',
+        'collections_browse_sql',
         'admin_collections_show',
         'public_collections_show',
     );
@@ -213,15 +213,17 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * Omit all child collections from the collection browse.
+     * Hook for collections browse: omit all child collections from the collection
+     * browse.
      */
-    public function hookCollectionBrowseSql($args)
+    public function hookCollectionsBrowseSql($args)
     {
         if (!is_admin_theme()) {
             $sql = "
-            c.id NOT IN (
+            collections.id NOT IN (
                 SELECT ct.collection_id
                 FROM {$this->_db->CollectionTree} ct
+                WHERE ct.parent_collection_id != 0
             )";
             $args['select']->where($sql);
         }
