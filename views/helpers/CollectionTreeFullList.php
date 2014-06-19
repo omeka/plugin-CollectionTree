@@ -1,7 +1,7 @@
 <?php
 /**
  * Collection Tree
- * 
+ *
  * @copyright Copyright 2007-2012 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
  */
@@ -16,25 +16,30 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
      * at root collections.
      *
      * @param bool $linkToCollectionShow
+     * @param bool $displayAllPublicCollections
      * @return string|null
      */
-    public function collectionTreeFullList($linkToCollectionShow = true)
+    public function collectionTreeFullList($linkToCollectionShow = true, $displayAllPublicCollections = false)
     {
-        $rootCollections = get_db()->getTable('CollectionTree')->getRootCollections();
+        $tableCollections = get_db()->getTable('Collection');
+        $tableCollectionsTree = get_db()->getTable('CollectionTree');
+        $rootCollections = $tableCollectionsTree->getRootCollections($displayAllPublicCollections);
+
         // Return NULL if there are no root collections.
         if (!$rootCollections) {
             return null;
         }
-        $collectionTable = get_db()->getTable('Collection');
+
         $html = '<div id="collection-tree"><ul>';
-        foreach ($rootCollections as $rootCollection) {
+        foreach ($rootCollections as $collection) {
             $html .= '<li>';
             if ($linkToCollectionShow) {
-                $html .= link_to_collection(null, array(), 'show', $collectionTable->find($rootCollection['id']));
-            } else {
-                $html .= $rootCollection['name'] ? $rootCollection['name'] : '[Untitled]';
+                $html .= link_to_collection(null, array(), 'show', $tableCollections->find($collection['id']));
             }
-            $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
+            else {
+                $html .= $collection['name'] ? $collection['name'] : '[Untitled]';
+            }
+            $collectionTree = $tableCollectionsTree->getDescendantTree($collection['id'], false, 0, $displayAllPublicCollections);
             $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow);
             $html .= '</li>';
         }

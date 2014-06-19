@@ -42,6 +42,14 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     );
 
     /**
+     * @var array Options and their default values.
+     */
+    protected $_options = array(
+        'collection_tree_alpha_order' => 0,
+        'collection_tree_display_all_public_collections' => 0,
+    );
+
+    /**
      * Install the plugin.
      *
      * One collection can have AT MOST ONE parent collection. One collection can
@@ -62,7 +70,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         $this->_db->query($sql);
 
-        set_option('collection_tree_alpha_order', '0');
+        $this->_installOptions();
 
         // Save all collections in the collection_trees table.
         $collectionTable = $this->_db->getTable('Collection');
@@ -85,7 +93,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $sql = "DROP TABLE IF EXISTS {$this->_db->CollectionTree}";
         $this->_db->query($sql);
 
-        delete_option('collection_tree_alpha_order');
+        $this->_uninstallOptions();
     }
 
     /**
@@ -141,9 +149,12 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * Handle the config form.
      */
-    public function hookConfig()
+    public function hookConfig($args)
     {
-        set_option('collection_tree_alpha_order', $_POST['collection_tree_alpha_order']);
+        $post = $args['post'];
+        foreach ($post as $key => $value) {
+            set_option($key, $value);
+        }
     }
 
     public function hookBeforeSaveCollection($args)
@@ -219,13 +230,23 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     public function hookCollectionsBrowseSql($args)
     {
         if (!is_admin_theme()) {
-            $sql = "
-            collections.id NOT IN (
-                SELECT ct.collection_id
-                FROM {$this->_db->CollectionTree} ct
-                WHERE ct.parent_collection_id != 0
-            )";
-            $args['select']->where($sql);
+            if (get_option('collection_tree_display_all_public_collections')) {
+                $publicRootCollections = $this->_db->getTable('CollectionTree')->getRootCollections(true);
+                $sql = "
+                collections.id IN ("
+                . implode(',', array_keys($publicRootCollections))
+                . ")";
+                $args['select']->where($sql);
+            }
+            else {
+                $sql = "
+                collections.id NOT IN (
+                    SELECT ct.collection_id
+                    FROM {$this->_db->CollectionTree} ct
+                    WHERE ct.parent_collection_id != 0
+                )";
+                $args['select']->where($sql);
+            }
         }
     }
 
@@ -234,20 +255,22 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAdminCollectionsShow($args)
     {
-        $this->_appendToCollectionsShow($args['collection']);
+        $this->_appendToCollectionsShow($args['collection'], false);
     }
 
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function hookPublicCollectionsShow()
+    public function hookPublicCollectionsShow($args)
     {
-        $this->_appendToCollectionsShow(get_current_record('collection'));
+        $this->_appendToCollectionsShow(
+            $args['collection'],
+            (boolean) get_option('collection_tree_display_all_public_collections'));
     }
 
-    protected function _appendToCollectionsShow($collection)
+    protected function _appendToCollectionsShow($collection, $public)
     {
-        $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
+        $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id, $public);
         echo get_view()->partial(
             'collections/collection-tree-list.php',
             array('collection_tree' => $collectionTree)
@@ -298,13 +321,21 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * Manage search options for collections.
      *
+     * @internal If another filter modifies the select before, this is lost,
+     * because the filter uses the hook collectionsBrowseSql.
+     * To keep the previous hook, use:
+     * return array_intersect_key($treeOptions, $options);
+     *
      * @param array Search options for collections.
      * @return array Filtered search options for collections.
      */
     public function filterCollectionsSelectOptions($options)
     {
-        $treeOptions = $this->_db->getTable('CollectionTree')->findPairsForSelectForm();
-        // Keep only chosen collections, in case another filter removed some.
-        return array_intersect_key($treeOptions, $options);
+        $public = is_admin_theme()
+            ? false
+            : (boolean) get_option('collection_tree_display_all_public_collections');
+
+        $treeOptions = $this->_db->getTable('CollectionTree')->findPairsForSelectForm('-', $public);
+        return $treeOptions;
     }
 }
