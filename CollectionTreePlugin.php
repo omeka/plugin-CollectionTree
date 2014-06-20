@@ -42,6 +42,14 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     );
 
     /**
+     * @var array Options and their default values.
+     */
+    protected $_options = array(
+        'collection_tree_alpha_order' => 0,
+        'collection_tree_empty_root_collections' => 'normal',
+    );
+
+    /**
      * Install the plugin.
      *
      * One collection can have AT MOST ONE parent collection. One collection can
@@ -62,7 +70,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
         $this->_db->query($sql);
 
-        set_option('collection_tree_alpha_order', '0');
+        $this->_installOptions();
 
         // Save all collections in the collection_trees table.
         $collectionTable = $this->_db->getTable('Collection');
@@ -85,7 +93,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $sql = "DROP TABLE IF EXISTS {$this->_db->CollectionTree}";
         $this->_db->query($sql);
 
-        delete_option('collection_tree_alpha_order');
+        $this->_uninstallOptions();
     }
 
     /**
@@ -141,9 +149,12 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * Handle the config form.
      */
-    public function hookConfig()
+    public function hookConfig($args)
     {
-        set_option('collection_tree_alpha_order', $_POST['collection_tree_alpha_order']);
+        $post = $args['post'];
+        foreach ($post as $key => $value) {
+            set_option($key, $value);
+        }
     }
 
     public function hookBeforeSaveCollection($args)
@@ -240,9 +251,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * Display the collection's parent collection and child collections.
      */
-    public function hookPublicCollectionsShow()
+    public function hookPublicCollectionsShow($args)
     {
-        $this->_appendToCollectionsShow(get_current_record('collection'));
+        $this->_appendToCollectionsShow($args['collection']);
     }
 
     protected function _appendToCollectionsShow($collection)
@@ -303,8 +314,13 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterCollectionsSelectOptions($options)
     {
-        $treeOptions = $this->_db->getTable('CollectionTree')->findPairsForSelectForm();
+        $emptyRootCollections = is_admin_theme()
+            ? 'normal'
+            : get_option('collection_tree_empty_root_collections');
+
+        $treeOptions = $this->_db->getTable('CollectionTree')->findPairsForSelectForm('-', $emptyRootCollections);
         // Keep only chosen collections, in case another filter removed some.
+        return $treeOptions;
         return array_intersect_key($treeOptions, $options);
     }
 }
