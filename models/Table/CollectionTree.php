@@ -124,7 +124,8 @@ class Table_CollectionTree extends Omeka_Db_Table
         ON c.id = ct.collection_id";
 
         // Cache only those collections to which the current user has access.
-        if (!get_acl()->isAllowed(current_user(), 'Collections', 'showNotPublic')) {
+        $showNotPublicCollections = get_acl()->isAllowed(current_user(), 'Collections', 'showNotPublic');
+        if (!$showNotPublicCollections) {
             $sql .= ' WHERE c.public = 1';
         }
 
@@ -143,7 +144,9 @@ class Table_CollectionTree extends Omeka_Db_Table
 
         // Add the first public parent to simplify the building of public trees.
         foreach ($collections as $collection) {
-            $collection['public_parent_collection_id'] = $this->_getPublicParentCollectionId($collection);
+            $collection['public_parent_collection_id'] = $showNotPublicCollections
+                ? $collection['parent_collection_id']
+                : $this->_getPublicParentCollectionId($collection);
             $this->_collections[$collection['id']] = $collection;
         }
     }
