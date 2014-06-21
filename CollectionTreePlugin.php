@@ -46,6 +46,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_options = array(
         'collection_tree_alpha_order' => 0,
+        'collection_tree_browse_only_root' => 0,
     );
 
     /**
@@ -230,6 +231,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     public function hookCollectionsBrowseSql($args)
     {
         if (!is_admin_theme()) {
+            if (!get_option('collection_tree_browse_only_root')) {
+                return;
+            }
             $sql = "
             collections.id NOT IN (
                 SELECT ct.collection_id

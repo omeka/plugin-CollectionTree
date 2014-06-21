@@ -11,3 +11,15 @@
             array('checked' => (bool) get_option('collection_tree_alpha_order'))); ?>
     </div>
 </div>
+<div class="field">
+    <div class="two columns alpha">
+        <?php echo $this->formLabel('collection_tree_browse_only_root', __('Browse collections')); ?>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php
+            echo __('The "Browse collections" page can be the normal one or, if checked, limited to root collections.');
+        ?></p>
+        <?php echo $this->formCheckbox('collection_tree_browse_only_root', null,
+            array('checked' => (bool) get_option('collection_tree_browse_only_root'))); ?>
+    </div>
+</div>
