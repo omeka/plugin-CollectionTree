@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Omeka\n"
-"Report-Msgid-Bugs-To: https://github.com/omeka/Omeka/issues\n"
+"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-SimpleVocab/issues\n"
 "POT-Creation-Date: 2012-11-30 21:49-0500\n"
-"PO-Revision-Date: 2013-06-03 20:17+0000\n"
+"PO-Revision-Date: 2013-06-09 08:29+0000\n"
 "Last-Translator: Matti Lassila <matti.lassila@gmail.com>\n"
 "Language-Team: Finnish (Finland) (http://www.transifex.com/projects/p/omeka/language/fi_FI/)\n"
 "MIME-Version: 1.0\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: views/shared/collections/collection-tree-list.php:1
 #: views/shared/index/index.php:1
 msgid "Collection Tree"
-msgstr "Kokoelmahierarkia"
+msgstr "Osakokoelmat"
 
 #: CollectionTreePlugin.php:274
 msgid "No parent collection"

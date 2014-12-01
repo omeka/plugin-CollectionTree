@@ -4,13 +4,14 @@
 # 
 # Translators:
 # evilinstone <evilinstone@gmail.com>, 2013
+# Izoniz <izonizne@mail.ru>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: Omeka\n"
-"Report-Msgid-Bugs-To: https://github.com/omeka/Omeka/issues\n"
+"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-SimpleVocab/issues\n"
 "POT-Creation-Date: 2012-11-30 21:49-0500\n"
-"PO-Revision-Date: 2013-04-06 15:25+0000\n"
-"Last-Translator: evilinstone <evilinstone@gmail.com>\n"
+"PO-Revision-Date: 2013-06-18 19:21+0000\n"
+"Last-Translator: Izoniz <izonizne@mail.ru>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/projects/p/omeka/language/uk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -39,27 +40,27 @@ msgstr "Колекція не може бути вихідною для себе
 #: models/CollectionTree.php:36
 msgid ""
 "A collection cannot be assigned to a collection in its descendant tree."
-msgstr ""
+msgstr "Колекція не може бути нащадком колекції у своєму власному дереві."
 
 #: views/admin/collections/collection-tree-parent-form.php:3
 msgid "Select a Parent Collection"
-msgstr ""
+msgstr "Вказати вихідну колекцію"
 
 #: views/admin/collections/collection-tree-parent-form.php:6
 msgid ""
 "A collection cannot be a parent to itself, nor can it be assigned to a "
 "collection in its descendant tree."
-msgstr ""
+msgstr "Колекція не може бути вихідною для себе і не може бути нащадком колекції у своєму власному дереві."
 
 #: views/admin/plugins/collection-tree-config-form.php:3
 msgid "Order alphabetically?"
-msgstr ""
+msgstr "Сортувати за алфавітом?"
 
 #: views/admin/plugins/collection-tree-config-form.php:6
 msgid ""
 "Order the collection tree alphabetically? This does not affect the order of "
 "the collections browse page."
-msgstr ""
+msgstr "Сортувати дерево колекцій за алфавітом? Це не вплине на порядок відображення на сторінці перегляду."
 
 #: views/shared/index/index.php:5
 msgid "There are no collections."

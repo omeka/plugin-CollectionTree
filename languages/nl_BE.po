@@ -3,11 +3,11 @@
 # This file is distributed under the same license as the Omeka package.
 # 
 # Translators:
-# dewulfevy <evy.dewulf@libis.kuleuven.be>, 2013
+# Evy De Wulf <evy.dewulf@libis.kuleuven.be>, 2013
 msgid ""
 msgstr ""
 "Project-Id-Version: Omeka\n"
-"Report-Msgid-Bugs-To: https://github.com/omeka/Omeka/issues\n"
+"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-SimpleVocab/issues\n"
 "POT-Creation-Date: 2012-11-30 21:49-0500\n"
 "PO-Revision-Date: 2013-05-01 12:04+0000\n"
 "Last-Translator: Sam Alloing <sam.alloing@gmail.com>\n"
