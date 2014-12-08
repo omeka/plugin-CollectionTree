@@ -51,6 +51,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     protected $_options = array(
         'collection_tree_alpha_order' => 0,
         'collection_tree_browse_only_root' => 0,
+        'collection_tree_search_descendant' => 0,
     );
 
     /**
@@ -318,7 +319,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $html .= $view->formLabel('subcollections', __('Broaden to the sub-collections'));
         $html .= '<div class="inputs">';
         $html .= $view->formCheckbox('subcollections', null,
-            array('checked' => false));
+            array('checked' => (bool) get_option('collection_tree_search_descendant')));
         $html .= '</div>';
         $html .= '</div>';
         return $html;

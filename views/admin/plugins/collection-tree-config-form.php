@@ -23,3 +23,15 @@
             array('checked' => (bool) get_option('collection_tree_browse_only_root'))); ?>
     </div>
 </div>
+<div class="field">
+    <div class="two columns alpha">
+        <?php echo $this->formLabel('collection_tree_search_descendant', __('Advanced search')); ?>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php
+            echo __('If checked, the advanced search of items will be expanded by default to all descendant collections of the selected collection.');
+        ?></p>
+        <?php echo $this->formCheckbox('collection_tree_search_descendant', null,
+            array('checked' => (bool) get_option('collection_tree_search_descendant'))); ?>
+    </div>
+</div>
