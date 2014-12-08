@@ -51,6 +51,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     protected $_options = array(
         'collection_tree_alpha_order' => 0,
         'collection_tree_browse_only_root' => 0,
+        'collection_tree_show_subcollections' => 0,
         'collection_tree_search_descendant' => 0,
     );
 
@@ -265,7 +266,18 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             $select = $args['select'];
             $params = $args['params'];
             if (!empty($params['descendant_or_self'])) {
-                $collection = (integer) $params['descendant_or_self'];
+                // Collection can be an object when not called from search form.
+                if ($params['descendant_or_self'] instanceof Collection) {
+                    $collection = $params['descendant_or_self']->id;
+                }
+                // Else this should be a non empty integer.
+                else {
+                    $collection = (integer) $params['descendant_or_self'];
+                    if (empty($collection)) {
+                        return;
+                    }
+                }
+
                 $collections = $this->_db->getTable('CollectionTree')
                     ->getDescendantOrSelfCollections($collection);
                 $collections = array_keys($collections);
@@ -401,6 +413,14 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterItemsBrowseParams($params)
     {
+        // Check if this is a direct query (not from advanced search).
+        if (!is_admin_theme()
+                && !isset($params['subcollections'])
+                && get_option('collection_tree_show_subcollections')
+            ) {
+             $params['subcollections'] = 1;
+        }
+
         if (!empty($params['collection']) && !empty($params['subcollections'])) {
             $params['descendant_or_self'] = $params['collection'];
             $params['collection'] = '';
