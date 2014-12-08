@@ -117,10 +117,12 @@ class Table_CollectionTree extends Omeka_Db_Table
     /**
      * Return the collection tree hierarchy as a one-dimensional array.
      *
+     * @param array $options (optional) Set of parameters for searching/
+     * filtering results.
      * @param string $padding The string representation of the collection depth.
      * @return array
      */
-    public function findPairsForSelectForm($padding = '-')
+    public function findPairsForSelectForm(array $options = array(), $padding = '-')
     {
         $options = array();
 
