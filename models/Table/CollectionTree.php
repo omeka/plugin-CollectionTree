@@ -275,6 +275,28 @@ class Table_CollectionTree extends Omeka_Db_Table
     }
 
     /**
+     * Get the list of descendant collections and the selected one.
+     *
+     * @param int $collectionId
+     * @return array Associative array of collections.
+     */
+    public function getDescendantOrSelfCollections($collectionId)
+    {
+        $collections = array();
+
+        $rootCollection = $this->getCollection($collectionId);
+        if ($rootCollection) {
+            $this->_resetCache();
+            $this->getDescendantTree($collectionId, true);
+            $collections[$collectionId] = $rootCollection;
+            $collections += array_intersect_key($this->_getCollections(), $this->_cache);
+            $this->_resetCache();
+        }
+
+        return $collections;
+    }
+
+    /**
      * Get all root collections, i.e. those without parent collections.
      *
      * @return array Associative array of root collections, by id.

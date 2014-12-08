@@ -27,6 +27,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'after_save_collection',
         'after_delete_collection',
         'collections_browse_sql',
+        'items_browse_sql',
+        'admin_items_search',
+        'public_items_search',
         'admin_collections_show',
         'public_collections_show',
     );
@@ -38,6 +41,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'admin_navigation_main',
         'public_navigation_main',
         'admin_collections_form_tabs',
+        'items_browse_params',
         'collections_select_options',
     );
 
@@ -249,13 +253,85 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
+     * Hook for items browse: search in collection's children and selected one.
+     *
+     * @param Omeka_Db_Select $select
+     * @param array $params
+     */
+    public function hookItemsBrowseSql($args)
+    {
+        if (!is_admin_theme()) {
+            $select = $args['select'];
+            $params = $args['params'];
+            if (!empty($params['descendant_or_self'])) {
+                $collection = (integer) $params['descendant_or_self'];
+                $collections = $this->_db->getTable('CollectionTree')
+                    ->getDescendantOrSelfCollections($collection);
+                $collections = array_keys($collections);
+
+                $select->joinInner(
+                    array('collections' => $this->_db->Collection),
+                    'items.collection_id = collections.id',
+                    array());
+
+                // There are descendants.
+                if (count($collections) > 1) {
+                    $select->where('collections.id IN (?)', $collections);
+                }
+                // There is only the collection itself or no collection.
+                else {
+                    $select->where('collections.id = ?', reset($collections));
+                }
+            }
+        }
+    }
+
+    /**
+     * Hook for admin advanced search.
+     *
+     * @return string HTML
+     */
+    public function hookAdminItemsSearch($args)
+    {
+        echo $this->_itemsSearch($args);
+    }
+
+    /**
+     * Hook for public advanced search.
+     *
+     * @return string HTML
+     */
+    public function hookPublicItemsSearch($args)
+    {
+        echo $this->_itemsSearch($args);
+    }
+
+    /**
+     * Append items search checkbox  to the advanced search page.
+     *
+     * @return string HTML
+     */
+    protected function _itemsSearch($args)
+    {
+        $view = $args['view'];
+        $html = '<div id="search-subcollections" class="field">';
+        $html .= $view->formLabel('subcollections', __('Broaden to the sub-collections'));
+        $html .= '<div class="inputs">';
+        $html .= $view->formCheckbox('subcollections', null,
+            array('checked' => false));
+        $html .= '</div>';
+        $html .= '</div>';
+        return $html;
+    }
+
+    /**
      * Display the collection's parent collection and child collections.
      */
     public function hookAdminCollectionsShow($args)
     {
         $this->_appendToCollectionsShow($args['collection']);
     }
-    
+
     /**
      * Display the collection's parent collection and child collections.
      */
@@ -314,6 +390,23 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         );
         return $tabs;
     }
+
+
+    /**
+     * Filter items browse params to broaden the search to subcollections.
+     *
+     * @param array $params
+     * @return array
+     */
+    public function filterItemsBrowseParams($params)
+    {
+        if (!empty($params['collection']) && !empty($params['subcollections'])) {
+            $params['descendant_or_self'] = $params['collection'];
+            $params['collection'] = '';
+        }
+        return $params;
+    }
+
 
     /**
      * Manage search options for collections.
