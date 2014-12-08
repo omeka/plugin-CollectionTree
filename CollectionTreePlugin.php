@@ -160,7 +160,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
 
     public function hookBeforeSaveCollection($args)
     {
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
+        $collection = $args['record'];
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($collection->id);
         if (!$collectionTree) {
             return;
         }
@@ -169,7 +170,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         if (isset($args['post']['collection_tree_parent_collection_id'])) {
             $collectionTree->parent_collection_id = $args['post']['collection_tree_parent_collection_id'];
             if (!$collectionTree->isValid()) {
-                $args['record']->addErrorsFrom($collectionTree);
+                $collection->addErrorsFrom($collectionTree);
             }
         }
     }
@@ -179,11 +180,12 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAfterSaveCollection($args)
     {
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
-        
+        $collection = $args['record'];
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($collection->id);
+
         if (!$collectionTree) {
             $collectionTree = new CollectionTree;
-            $collectionTree->collection_id = $args['record']->id;
+            $collectionTree->collection_id = $collection->id;
             $collectionTree->parent_collection_id = 0;
         }
         
@@ -208,16 +210,17 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAfterDeleteCollection($args)
     {
+        $collection = $args['record'];
         $collectionTreeTable = $this->_db->getTable('CollectionTree');
         
         // Delete the relationship with the parent collection.
-        $collectionTree = $collectionTreeTable->findByCollectionId($args['record']->id);
+        $collectionTree = $collectionTreeTable->findByCollectionId($collection->id);
         if ($collectionTree) {
             $collectionTree->delete();
         }
         
         // Move child collections to root level by deleting their relationships.
-        $collectionTrees = $collectionTreeTable->findByParentCollectionId($args['record']->id);
+        $collectionTrees = $collectionTreeTable->findByParentCollectionId($collection->id);
         foreach ($collectionTrees as  $collectionTree) {
             $collectionTree->parent_collection_id = 0;
             $collectionTree->save();
@@ -234,13 +237,14 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             if (!get_option('collection_tree_browse_only_root')) {
                 return;
             }
+            $select = $args['select'];
             $sql = "
             collections.id NOT IN (
-                SELECT ct.collection_id
-                FROM {$this->_db->CollectionTree} ct
-                WHERE ct.parent_collection_id != 0
+                SELECT collection_trees.collection_id
+                FROM {$this->_db->CollectionTree} collection_trees
+                WHERE collection_trees.parent_collection_id != 0
             )";
-            $args['select']->where($sql);
+            $select->where($sql);
         }
     }
 
@@ -292,12 +296,13 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterAdminCollectionsFormTabs($tabs, $args)
     {
+        $collection = $args['collection'];
         $collectionTreeTable = $this->_db->getTable('CollectionTree');
         
         $options = $collectionTreeTable->findPairsForSelectForm();
         $options = array('0' => __('No parent collection')) + $options;
-        
-        $collectionTree = $collectionTreeTable->findByCollectionId($args['collection']->id);
+
+        $collectionTree = $collectionTreeTable->findByCollectionId($collection->id);
         if ($collectionTree) {
             $parentCollectionId = $collectionTree->parent_collection_id;
         } else {
