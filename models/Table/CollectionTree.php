@@ -148,12 +148,12 @@ class Table_CollectionTree extends Omeka_Db_Table
     {
         $options = array();
 
-        foreach ($this->getRootCollections() as $rootCollection) {
+        foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
 
-            $options[$rootCollection['id']] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
+            $options[$rootCollectionId] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
 
             $this->_resetCache();
-            $this->getDescendantTree($rootCollection['id'], true);
+            $this->getDescendantTree($rootCollectionId, true);
             foreach ($this->_cache as $collectionId => $collectionDepth) {
                 $collection = $this->getCollection($collectionId);
                 $options[$collectionId] = str_repeat($padding, $collectionDepth) . ' ';
@@ -242,7 +242,7 @@ class Table_CollectionTree extends Omeka_Db_Table
         $collectionDepth++;
 
         // Iterate the child collections.
-        $descendantTree = $this->getChildCollections($collectionId);
+        $descendantTree = array_values($this->getChildCollections($collectionId));
         for ($i = 0; $i < count($descendantTree); $i++) {
 
             if ($cacheDescendantInfo) {
@@ -291,7 +291,7 @@ class Table_CollectionTree extends Omeka_Db_Table
      * Get the child collections of the specified collection.
      *
      * @param int $collectionId
-     * @return array
+     * @return array Associative array of collections, by id.
      */
     public function getChildCollections($collectionId)
     {
@@ -303,7 +303,7 @@ class Table_CollectionTree extends Omeka_Db_Table
         $childCollections = array();
         foreach ($this->_collections as $collection) {
             if ($collectionId == $collection['parent_collection_id']) {
-                $childCollections[] = $collection;
+                $childCollections[$collection['id']] = $collection;
             }
         }
         return $childCollections;
@@ -312,7 +312,7 @@ class Table_CollectionTree extends Omeka_Db_Table
     /**
      * Get all root collections, i.e. those without parent collections.
      *
-     * @return array
+     * @return array Associative array of root collections, by id.
      */
     public function getRootCollections()
     {
@@ -324,7 +324,7 @@ class Table_CollectionTree extends Omeka_Db_Table
         $rootCollections = array();
         foreach ($this->_collections as $collection) {
             if (!$collection['parent_collection_id']) {
-                $rootCollections[] = $collection;
+                $rootCollections[$collection['id']] = $collection;
             }
         }
         return $rootCollections;
