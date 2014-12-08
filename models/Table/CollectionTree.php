@@ -115,30 +115,6 @@ class Table_CollectionTree extends Omeka_Db_Table
     }
 
     /**
-     * Cache collection data.
-     */
-    public function cacheCollections()
-    {
-        $table = $this->_db->getTable('Collection');
-        $alias = $this->getTableAlias();
-        $aliasCollection = $table->getTableAlias();
-
-        // Access rights to collections are automatically managed.
-        $select = $table->getSelect();
-        $select->joinLeft(
-            array($alias => $this->getTableName()),
-            "$aliasCollection.id = $alias.collection_id",
-            array('parent_collection_id', 'name'));
-
-        // Order alphabetically if configured to do so.
-        if (get_option('collection_tree_alpha_order')) {
-            $select->order("$alias.name ASC");
-        }
-
-        $this->_collections = $this->fetchAll($select);
-    }
-
-    /**
      * Return the collection tree hierarchy as a one-dimensional array.
      *
      * @param string $padding The string representation of the collection depth.
@@ -274,17 +250,8 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getCollection($collectionId)
     {
-        // Cache collections in not already.
-        if (!$this->_collections) {
-            $this->cacheCollections();
-        }
-
-        foreach ($this->_collections as $collection) {
-            if ($collectionId == $collection['id']) {
-                return $collection;
-            }
-        }
-        return false;
+        $collections = $this->_getCollections();
+        return isset($collections[$collectionId]) ? $collections[$collectionId] : false;
     }
 
     /**
@@ -295,13 +262,9 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getChildCollections($collectionId)
     {
-        // Cache collections if not already.
-        if (!$this->_collections) {
-            $this->cacheCollections();
-        }
-
         $childCollections = array();
-        foreach ($this->_collections as $collection) {
+        $collections = $this->_getCollections();
+        foreach ($collections as $collection) {
             if ($collectionId == $collection['parent_collection_id']) {
                 $childCollections[$collection['id']] = $collection;
             }
@@ -316,13 +279,9 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getRootCollections()
     {
-        // Cache collections if not already.
-        if (!$this->_collections) {
-            $this->cacheCollections();
-        }
-
         $rootCollections = array();
-        foreach ($this->_collections as $collection) {
+        $collections = $this->_getCollections();
+        foreach ($collections as $collection) {
             if (!$collection['parent_collection_id']) {
                 $rootCollections[$collection['id']] = $collection;
             }
@@ -346,6 +305,34 @@ class Table_CollectionTree extends Omeka_Db_Table
         $unassignableCollections = array_keys($this->_cache);
         $this->_resetCache();
         return $unassignableCollections;
+    }
+
+    /**
+     * Cache collection data with name and parent id in an associative array.
+     */
+    protected function _getCollections()
+    {
+        if (is_null($this->_collections)) {
+            $table = $this->_db->getTable('Collection');
+            $alias = $this->getTableAlias();
+            $aliasCollection = $table->getTableAlias();
+
+            // Access rights to collections are automatically managed.
+            $select = $table->getSelect();
+            $select->joinLeft(
+                array($alias => $this->getTableName()),
+                "$aliasCollection.id = $alias.collection_id",
+                array('parent_collection_id', 'name'));
+
+            // Order alphabetically if configured to do so.
+            if (get_option('collection_tree_alpha_order')) {
+                $select->order("$alias.name ASC");
+            }
+
+            $this->_collections = $this->fetchAssoc($select);
+        }
+
+        return $this->_collections;
     }
 
     /**
