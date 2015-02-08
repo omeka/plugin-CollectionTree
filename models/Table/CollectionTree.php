@@ -149,14 +149,14 @@ class Table_CollectionTree extends Omeka_Db_Table
 
         foreach ($this->getRootCollections() as $rootCollection) {
 
-            $options[$rootCollection['id']] = $rootCollection['name'] ? $rootCollection['name'] : '[Untitled]';
+            $options[$rootCollection['id']] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
 
             $this->_resetCache();
             $this->getDescendantTree($rootCollection['id'], true);
             foreach ($this->_cache as $collectionId => $collectionDepth) {
                 $collection = $this->getCollection($collectionId);
                 $options[$collectionId] = str_repeat($padding, $collectionDepth) . ' ';
-                $options[$collectionId] .= $collection['name'] ? $collection['name'] : '[Untitled]';
+                $options[$collectionId] .= $collection['name'] ? $collection['name'] : __('[Untitled]');
             }
         }
         $this->_resetCache();

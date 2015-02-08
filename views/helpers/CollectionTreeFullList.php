@@ -32,7 +32,7 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
             if ($linkToCollectionShow) {
                 $html .= link_to_collection(null, array(), 'show', $collectionTable->find($rootCollection['id']));
             } else {
-                $html .= $rootCollection['name'] ? $rootCollection['name'] : '[Untitled]';
+                $html .= $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
             }
             $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
             $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow);
