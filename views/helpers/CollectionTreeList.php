@@ -34,7 +34,7 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
             if ($linkToCollectionShow && !isset($collection['current'])) {
                 $html .= link_to_collection(null, array(), 'show', $collectionTable->find($collection['id']));
             } else {
-                $html .= $collection['name'] ? $collection['name'] : '[Untitled]';
+                $html .= $collection['name'] ? $collection['name'] : __('[Untitled]');
             }
             $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';
