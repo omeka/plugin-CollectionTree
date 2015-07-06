@@ -206,7 +206,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     }
 
     /**
-     * Omit all child collections from the collection browse.
+     * Hook for collections browse: omit all child collections from the collection
+     * browse.
      */
     public function hookCollectionsBrowseSql($args)
     {
@@ -220,7 +221,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             $args['select']->where($sql);
         }
     }
-    
+
     /**
      * Display the collection's parent collection and child collections.
      */
