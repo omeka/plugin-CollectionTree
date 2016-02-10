@@ -124,6 +124,12 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function findPairsForSelectForm(array $options = array(), $padding = '-')
     {
+        if (isset($params['padding'])) {
+            $padding = $params['padding'];
+        } else {
+            $padding = '-';
+        }
+
         $options = array();
 
         foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
