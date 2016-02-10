@@ -143,8 +143,14 @@ class Table_CollectionTree extends Omeka_Db_Table
      * @param string $padding The string representation of the collection depth.
      * @return array
      */
-    public function findPairsForSelectForm($padding = '-')
+    public function findPairsForSelectForm(array $params = array())
     {
+        if (isset($params['padding'])) {
+            $padding = $params['padding'];
+        } else {
+            $padding = '-';
+        }
+
         $options = array();
 
         foreach ($this->getRootCollections() as $rootCollection) {
