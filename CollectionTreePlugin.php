@@ -327,15 +327,14 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected function _itemsSearch($args)
     {
-        $view = $args['view'];
-        $html = '<div id="search-subcollections" class="field">';
-        $html .= $view->formLabel('subcollections', __('Broaden to the sub-collections'));
-        $html .= '<div class="inputs">';
-        $html .= $view->formCheckbox('subcollections', null,
-            array('checked' => (bool) get_option('collection_tree_search_descendant')));
-        $html .= '</div>';
-        $html .= '</div>';
-        return $html;
+        return '<div class="field">
+            <div class="two columns alpha">
+                <label for="public">' . __('Expand to subcollections') . '</label>
+            </div>
+            <div class="five columns omega inputs">
+                ' . $args['view']->formCheckbox('subcollections', null, array('checked' => (bool) get_option('collection_tree_search_descendant'))) . '
+            </div>
+        </div>';
     }
 
     /**
