@@ -264,10 +264,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookItemsBrowseSql($args)
     {
-        if (is_admin_theme()) {
-            return;
-        }
-
         $params = $args['params'];
         if (empty($params['descendant_or_self'])) {
             return;
