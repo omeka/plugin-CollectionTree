@@ -27,6 +27,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'after_save_collection',
         'after_delete_collection',
         'collections_browse_sql',
+        'items_browse_sql',
+        'admin_items_search',
+        'public_items_search',
         'admin_collections_show',
         'public_collections_show',
     );
@@ -38,6 +41,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'admin_navigation_main',
         'public_navigation_main',
         'admin_collections_form_tabs',
+        'items_browse_params',
         'collections_select_options',
     );
 
@@ -47,6 +51,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     protected $_options = array(
         'collection_tree_alpha_order' => 0,
         'collection_tree_browse_only_root' => 0,
+        'collection_tree_show_subcollections' => 0,
+        'collection_tree_search_descendant' => 0,
     );
 
     /**
@@ -153,14 +159,17 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     public function hookConfig($args)
     {
         $post = $args['post'];
-        foreach ($post as $key => $value) {
-            set_option($key, $value);
+        foreach ($this->_options as $optionKey => $optionValue) {
+            if (isset($post[$optionKey])) {
+                set_option($optionKey, $post[$optionKey]);
+            }
         }
     }
 
     public function hookBeforeSaveCollection($args)
     {
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
+        $collection = $args['record'];
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($collection->id);
         if (!$collectionTree) {
             return;
         }
@@ -169,7 +178,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         if (isset($args['post']['collection_tree_parent_collection_id'])) {
             $collectionTree->parent_collection_id = $args['post']['collection_tree_parent_collection_id'];
             if (!$collectionTree->isValid()) {
-                $args['record']->addErrorsFrom($collectionTree);
+                $collection->addErrorsFrom($collectionTree);
             }
         }
     }
@@ -179,11 +188,12 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAfterSaveCollection($args)
     {
-        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($args['record']->id);
-        
+        $collection = $args['record'];
+        $collectionTree = $this->_db->getTable('CollectionTree')->findByCollectionId($collection->id);
+
         if (!$collectionTree) {
             $collectionTree = new CollectionTree;
-            $collectionTree->collection_id = $args['record']->id;
+            $collectionTree->collection_id = $collection->id;
             $collectionTree->parent_collection_id = 0;
         }
         
@@ -208,16 +218,17 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookAfterDeleteCollection($args)
     {
+        $collection = $args['record'];
         $collectionTreeTable = $this->_db->getTable('CollectionTree');
         
         // Delete the relationship with the parent collection.
-        $collectionTree = $collectionTreeTable->findByCollectionId($args['record']->id);
+        $collectionTree = $collectionTreeTable->findByCollectionId($collection->id);
         if ($collectionTree) {
             $collectionTree->delete();
         }
         
         // Move child collections to root level by deleting their relationships.
-        $collectionTrees = $collectionTreeTable->findByParentCollectionId($args['record']->id);
+        $collectionTrees = $collectionTreeTable->findByParentCollectionId($collection->id);
         foreach ($collectionTrees as  $collectionTree) {
             $collectionTree->parent_collection_id = 0;
             $collectionTree->save();
@@ -234,14 +245,96 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             if (!get_option('collection_tree_browse_only_root')) {
                 return;
             }
+            $select = $args['select'];
             $sql = "
             collections.id NOT IN (
-                SELECT ct.collection_id
-                FROM {$this->_db->CollectionTree} ct
-                WHERE ct.parent_collection_id != 0
+                SELECT collection_trees.collection_id
+                FROM {$this->_db->CollectionTree} collection_trees
+                WHERE collection_trees.parent_collection_id != 0
             )";
-            $args['select']->where($sql);
+            $select->where($sql);
         }
+    }
+
+    /**
+     * Hook for items browse: search in collection's children and selected one.
+     *
+     * @param Omeka_Db_Select $select
+     * @param array $params
+     */
+    public function hookItemsBrowseSql($args)
+    {
+        $params = $args['params'];
+        if (empty($params['descendant_or_self'])) {
+            return;
+        }
+
+        $collection = $params['descendant_or_self'] instanceof Collection
+            // Collection can be an object when not called from search form.
+            ? $params['descendant_or_self']->id
+            // Else this should be an integer.
+            : (integer) $params['descendant_or_self'];
+
+        if (empty($collection)) {
+            return;
+        }
+
+        $select = $args['select'];
+
+        $collections = $this->_db->getTable('CollectionTree')
+            ->getDescendantOrSelfCollections($collection);
+        $collections = array_keys($collections);
+
+        $select->joinInner(
+            array('collection_tree_collections' => $this->_db->Collection),
+            'items.collection_id = collection_tree_collections.id',
+            array());
+
+        // There are descendants.
+        if (count($collections) > 1) {
+            $select->where('collection_tree_collections.id IN (?)', $collections);
+        }
+        // There is only the collection itself or no collection.
+        else {
+            $select->where('collection_tree_collections.id = ?', reset($collections));
+        }
+    }
+
+    /**
+     * Hook for admin advanced search.
+     *
+     * @return string HTML
+     */
+    public function hookAdminItemsSearch($args)
+    {
+        echo $this->_itemsSearch($args);
+    }
+
+    /**
+     * Hook for public advanced search.
+     *
+     * @return string HTML
+     */
+    public function hookPublicItemsSearch($args)
+    {
+        echo $this->_itemsSearch($args);
+    }
+
+    /**
+     * Append items search checkbox  to the advanced search page.
+     *
+     * @return string HTML
+     */
+    protected function _itemsSearch($args)
+    {
+        return '<div class="field">
+            <div class="two columns alpha">
+                <label for="public">' . __('Expand to subcollections') . '</label>
+            </div>
+            <div class="five columns omega inputs">
+                ' . $args['view']->formCheckbox('subcollections', null, array('checked' => (bool) get_option('collection_tree_search_descendant'))) . '
+            </div>
+        </div>';
     }
 
     /**
@@ -251,7 +344,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     {
         $this->_appendToCollectionsShow($args['collection']);
     }
-    
+
     /**
      * Display the collection's parent collection and child collections.
      */
@@ -292,12 +385,13 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function filterAdminCollectionsFormTabs($tabs, $args)
     {
+        $collection = $args['collection'];
         $collectionTreeTable = $this->_db->getTable('CollectionTree');
         
         $options = $collectionTreeTable->findPairsForSelectForm();
         $options = array('0' => __('No parent collection')) + $options;
-        
-        $collectionTree = $collectionTreeTable->findByCollectionId($args['collection']->id);
+
+        $collectionTree = $collectionTreeTable->findByCollectionId($collection->id);
         if ($collectionTree) {
             $parentCollectionId = $collectionTree->parent_collection_id;
         } else {
@@ -309,6 +403,42 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         );
         return $tabs;
     }
+
+
+    /**
+     * Filter items browse params to broaden the search to subcollections.
+     *
+     * @param array $params
+     * @return array
+     */
+    public function filterItemsBrowseParams($params)
+    {
+        // Check if this is a direct query (not from advanced search).
+        if (!is_admin_theme()
+                && !isset($params['subcollections'])
+                && get_option('collection_tree_show_subcollections')
+            ) {
+             $params['subcollections'] = 1;
+        }
+
+        if (!empty($params['subcollections'])) {
+            $collection = 0;
+            if (!empty($params['collection_id'])) {
+                $collection = $params['collection_id'];
+                $params['collection_id'] = '';
+            }
+            if (!empty($params['collection'])) {
+                $collection = $params['collection'];
+                $params['collection'] = '';
+            }
+            if ($collection) {
+                $params['descendant_or_self'] = $collection;
+            }
+        }
+
+        return $params;
+    }
+
 
     /**
      * Manage search options for collections.
