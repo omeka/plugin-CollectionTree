@@ -13,7 +13,7 @@
 </div>
 <div class="field">
     <div class="two columns alpha">
-        <?php echo $this->formLabel('collection_tree_browse_only_root', __('Browse root-level')); ?>
+        <?php echo $this->formLabel('collection_tree_browse_only_root', __('Browse root-level collections only')); ?>
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
@@ -25,12 +25,11 @@
 </div>
 <div class="field">
     <div class="two columns alpha">
-        <?php echo $this->formLabel('collection_tree_show_subcollections', __('Show collection')); ?>
+        <?php echo $this->formLabel('collection_tree_show_subcollections', __('Show subcollection items')); ?>
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
-            echo __('The "Show collection" page can show items of current collection only, or all items of subcollections.');
-            echo ' ' . __('This is specially useful when root collections are empty and used as main categories.');
+            echo __('On public collection show pages, display items belonging to all subcollections. This is especially useful when root collections are empty and used as main categories.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_show_subcollections', null,
             array('checked' => (bool) get_option('collection_tree_show_subcollections'))); ?>
@@ -38,11 +37,11 @@
 </div>
 <div class="field">
     <div class="two columns alpha">
-        <?php echo $this->formLabel('collection_tree_search_descendant', __('Advanced search')); ?>
+        <?php echo $this->formLabel('collection_tree_search_descendant', __('Expand search to subcollection items by default')); ?>
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
-            echo __('If checked, the advanced search of items will be expanded by default to all descendant collections of the selected collection.');
+            echo __('When searching by collection, expand searching to all subcollections by default.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_search_descendant', null,
             array('checked' => (bool) get_option('collection_tree_search_descendant'))); ?>
