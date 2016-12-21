@@ -44,33 +44,36 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function fetchAssignableParentCollections($collectionId)
     {
-        $db = $this->getDb();
-
         // Must cast null collection ID to 0 to properly bind.
         $collectionId = (int) $collectionId;
 
-        $sql = "
-        SELECT c.*, ct.name
-        FROM {$db->Collection} c
-        LEFT JOIN {$db->CollectionTree} ct
-        ON c.id = ct.collection_id
-        WHERE c.id != ?";
+        $table = $this->_db->getTable('Collection');
+        $alias = $this->getTableAlias();
+        $aliasCollection = $table->getTableAlias();
+
+        // Access rights to collections are automatically managed.
+        $select = $table->getSelect();
+        $select->joinLeft(
+            array($alias => $this->getTableName()),
+            "$aliasCollection.id = $alias.collection_id",
+            array('name'));
+        $select->where("$aliasCollection.id != ?", $collectionId);
 
         // If not a new collection, cache descendant collection IDs and exclude
         // those collections from the result.
         if ($collectionId) {
             $unassignableCollectionIds = $this->getUnassignableCollectionIds();
             if ($unassignableCollectionIds) {
-                $sql .= " AND c.id NOT IN (" . implode(', ', $unassignableCollectionIds) . ")";
+                $select->where("$aliasCollection.id NOT IN (?)", $unassignableCollectionIds);
             }
         }
 
         // Order alphabetically if configured to do so.
         if (get_option('collection_tree_alpha_order')) {
-            $sql .= ' ORDER BY ct.name';
+            $select->order("$alias.name ASC");
         }
 
-        return $db->fetchAll($sql, array((int) $collectionId));
+        return $this->fetchAssoc($select);
     }
 
     /**
@@ -81,15 +84,16 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function findByCollectionId($collectionId)
     {
-        $db = $this->getDb();
+        // Cast to integer to prevent SQL injection.
+        $collectionId = (int) $collectionId;
 
-        $sql = "
-        SELECT *
-        FROM {$db->CollectionTree}
-        WHERE collection_id = ?";
-
+        $alias = $this->getTableAlias();
+        $select = $this->getSelect();
+        $select->where("$alias.collection_id = ?", $collectionId);
+        $select->limit(1);
+        $select->reset(Zend_Db_Select::ORDER);
         // Child collection IDs are unique, so only fetch one row.
-        return $this->fetchObject($sql, array($collectionId));
+        return $this->fetchObject($select);
     }
 
     /**
@@ -100,50 +104,25 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function findByParentCollectionId($parentCollectionId)
     {
-        $db = $this->getDb();
+        // Cast to integer to prevent SQL injection.
+        $parentCollectionId = (int) $parentCollectionId;
 
-        $sql = "
-        SELECT *
-        FROM {$db->CollectionTree}
-        WHERE parent_collection_id = ?";
-
-        return $this->fetchObjects($sql, array($parentCollectionId));
-    }
-
-    /**
-     * Cache collection data.
-     */
-    public function cacheCollections()
-    {
-        $db = $this->getDb();
-        $sql = "
-        SELECT c.*, ct.parent_collection_id, ct.name
-        FROM {$db->Collection} c
-        LEFT JOIN {$db->CollectionTree} ct
-        ON c.id = ct.collection_id";
-
-        // check whether the acl exists -- it doesn't within a background process
-        $acl = get_acl();
-        // Cache only those collections to which the current user has access.
-        if ($acl && ! $acl->isAllowed(current_user(), 'Collections', 'showNotPublic')) {
-            $sql .= ' WHERE c.public = 1';
-        }
-
-        // Order alphabetically if configured to do so.
-        if (get_option('collection_tree_alpha_order')) {
-            $sql .= ' ORDER BY ct.name';
-        }
-
-        $this->_collections = $db->fetchAll($sql);
+        $alias = $this->getTableAlias();
+        $select = $this->getSelect();
+        $select->where("$alias.parent_collection_id = ?", $parentCollectionId);
+        $select->reset(Zend_Db_Select::ORDER);
+        return $this->fetchObjects($select);
     }
 
     /**
      * Return the collection tree hierarchy as a one-dimensional array.
      *
+     * @param array $options (optional) Set of parameters for searching/
+     * filtering results.
      * @param string $padding The string representation of the collection depth.
      * @return array
      */
-    public function findPairsForSelectForm(array $params = array())
+    public function findPairsForSelectForm(array $options = array(), $padding = '-')
     {
         if (isset($params['padding'])) {
             $padding = $params['padding'];
@@ -153,12 +132,12 @@ class Table_CollectionTree extends Omeka_Db_Table
 
         $options = array();
 
-        foreach ($this->getRootCollections() as $rootCollection) {
+        foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
 
-            $options[$rootCollection['id']] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
+            $options[$rootCollectionId] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
 
             $this->_resetCache();
-            $this->getDescendantTree($rootCollection['id'], true);
+            $this->getDescendantTree($rootCollectionId, true);
             foreach ($this->_cache as $collectionId => $collectionDepth) {
                 $collection = $this->getCollection($collectionId);
                 $options[$collectionId] = str_repeat($padding, $collectionDepth) . ' ';
@@ -247,7 +226,7 @@ class Table_CollectionTree extends Omeka_Db_Table
         $collectionDepth++;
 
         // Iterate the child collections.
-        $descendantTree = $this->getChildCollections($collectionId);
+        $descendantTree = array_values($this->getChildCollections($collectionId));
         for ($i = 0; $i < count($descendantTree); $i++) {
 
             if ($cacheDescendantInfo) {
@@ -255,9 +234,10 @@ class Table_CollectionTree extends Omeka_Db_Table
             }
 
             // Recurse the child collections, getting their children.
-            $children = $this->getDescendantTree($descendantTree[$i]['id'],
-                                                 $cacheDescendantInfo,
-                                                 $collectionDepth);
+            $children = $this->getDescendantTree(
+                $descendantTree[$i]['id'],
+                $cacheDescendantInfo,
+                $collectionDepth);
 
             // Assign the child collections to the descendant tree.
             if ($children) {
@@ -278,57 +258,62 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getCollection($collectionId)
     {
-        // Cache collections in not already.
-        if (!$this->_collections) {
-            $this->cacheCollections();
-        }
-
-        foreach ($this->_collections as $collection) {
-            if ($collectionId == $collection['id']) {
-                return $collection;
-            }
-        }
-        return false;
+        $collections = $this->_getCollections();
+        return isset($collections[$collectionId]) ? $collections[$collectionId] : false;
     }
 
     /**
      * Get the child collections of the specified collection.
      *
      * @param int $collectionId
-     * @return array
+     * @return array Associative array of collections, by id.
      */
     public function getChildCollections($collectionId)
     {
-        // Cache collections if not already.
-        if (!$this->_collections) {
-            $this->cacheCollections();
-        }
-
         $childCollections = array();
-        foreach ($this->_collections as $collection) {
+        $collections = $this->_getCollections();
+        foreach ($collections as $collection) {
             if ($collectionId == $collection['parent_collection_id']) {
-                $childCollections[] = $collection;
+                $childCollections[$collection['id']] = $collection;
             }
         }
         return $childCollections;
     }
 
     /**
+     * Get the list of descendant collections and the selected one.
+     *
+     * @param int $collectionId
+     * @return array Associative array of collections.
+     */
+    public function getDescendantOrSelfCollections($collectionId)
+    {
+        $collections = array();
+
+        $rootCollection = $this->getCollection($collectionId);
+        if ($rootCollection) {
+            $this->_resetCache();
+            $this->getDescendantTree($collectionId, true);
+            $collections[$collectionId] = $rootCollection;
+            $collections += array_intersect_key($this->_getCollections(), $this->_cache);
+            $this->_resetCache();
+        }
+
+        return $collections;
+    }
+
+    /**
      * Get all root collections, i.e. those without parent collections.
      *
-     * @return array
+     * @return array Associative array of root collections, by id.
      */
     public function getRootCollections()
     {
-        // Cache collections if not already.
-        if (!$this->_collections) {
-            $this->cacheCollections();
-        }
-
         $rootCollections = array();
-        foreach ($this->_collections as $collection) {
+        $collections = $this->_getCollections();
+        foreach ($collections as $collection) {
             if (!$collection['parent_collection_id']) {
-                $rootCollections[] = $collection;
+                $rootCollections[$collection['id']] = $collection;
             }
         }
         return $rootCollections;
@@ -350,6 +335,34 @@ class Table_CollectionTree extends Omeka_Db_Table
         $unassignableCollections = array_keys($this->_cache);
         $this->_resetCache();
         return $unassignableCollections;
+    }
+
+    /**
+     * Cache collection data with name and parent id in an associative array.
+     */
+    protected function _getCollections()
+    {
+        if (is_null($this->_collections)) {
+            $table = $this->_db->getTable('Collection');
+            $alias = $this->getTableAlias();
+            $aliasCollection = $table->getTableAlias();
+
+            // Access rights to collections are automatically managed.
+            $select = $table->getSelect();
+            $select->joinLeft(
+                array($alias => $this->getTableName()),
+                "$aliasCollection.id = $alias.collection_id",
+                array('parent_collection_id', 'name'));
+
+            // Order alphabetically if configured to do so.
+            if (get_option('collection_tree_alpha_order')) {
+                $select->order("$alias.name ASC");
+            }
+
+            $this->_collections = $this->fetchAssoc($select);
+        }
+
+        return $this->_collections;
     }
 
     /**
