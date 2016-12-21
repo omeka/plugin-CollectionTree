@@ -13,11 +13,11 @@
 </div>
 <div class="field">
     <div class="two columns alpha">
-        <?php echo $this->formLabel('collection_tree_browse_only_root', __('Browse collections')); ?>
+        <?php echo $this->formLabel('collection_tree_browse_only_root', __('Browse root-level')); ?>
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
-            echo __('The "Browse collections" page can be the normal one or, if checked, limited to root collections.');
+            echo __('Limit the public collections browse page to root-level collections.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_browse_only_root', null,
             array('checked' => (bool) get_option('collection_tree_browse_only_root'))); ?>
