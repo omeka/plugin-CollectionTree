@@ -22,6 +22,14 @@ class Table_CollectionTree extends Omeka_Db_Table
     protected $_collections;
 
     /**
+     * Cache of children of a collection.
+     *
+     * It's an associative array where keys are collection ids and values are
+     * arrays of children ids.
+     */
+    protected $_collectionsChildren;
+
+    /**
      * Cache of variables needed for some use.
      *
      * Caching is often needed to extract variables from recursive methods. Be
@@ -271,12 +279,14 @@ class Table_CollectionTree extends Omeka_Db_Table
     public function getChildCollections($collectionId)
     {
         $childCollections = array();
-        $collections = $this->_getCollections();
-        foreach ($collections as $collection) {
-            if ($collectionId == $collection['parent_collection_id']) {
-                $childCollections[$collection['id']] = $collection;
+        $collectionsChildren = $this->_getCollectionsChildren();
+
+        if (isset($collectionsChildren[$collectionId])) {
+            foreach ($collectionsChildren[$collectionId] as $childId) {
+                $childCollections[$childId] = $this->getCollection($childId);
             }
         }
+
         return $childCollections;
     }
 
@@ -363,6 +373,26 @@ class Table_CollectionTree extends Omeka_Db_Table
         }
 
         return $this->_collections;
+    }
+
+    /**
+     * Cache collections children data in an associative array.
+     */
+    protected function _getCollectionsChildren()
+    {
+        if (is_null($this->_collectionsChildren)) {
+            $collections = $this->_getCollections();
+
+            $this->_collectionsChildren = array();
+            foreach ($collections as $id => $collection) {
+                if ($collection['parent_collection_id']) {
+                    $parent_collection_id = $collection['parent_collection_id'];
+                    $this->_collectionsChildren[$parent_collection_id][] = $id;
+                }
+            }
+        }
+
+        return $this->_collectionsChildren;
     }
 
     /**
