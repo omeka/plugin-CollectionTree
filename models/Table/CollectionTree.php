@@ -118,8 +118,12 @@ class Table_CollectionTree extends Omeka_Db_Table
     /**
      * Return the collection tree hierarchy as a one-dimensional array.
      *
-     * @param array $options (unused) Set of parameters for searching/
-     * filtering results. No options are currently available for this method.
+     * @param array $options Set of parameters for searching/filtering results.
+     * Managed options:
+     * - order (array): assoiative array with collection ids as key and integers
+     * as value for priority, that allows to order collections at each level
+     * (see plugin ColSort). The priority is a positive integer. The collections
+     * without priority are appended after the ordered ones.
      * @param string $padding The string representation of the collection depth.
      * @return array
      */
@@ -131,13 +135,24 @@ class Table_CollectionTree extends Omeka_Db_Table
             $padding = '-';
         }
 
+        $order = isset($options['order']) ? array_filter($options['order']) : array();
+
         $pairs = array();
 
-        foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
+        $rootCollections = $this->getRootCollections();
+        $rootCollections = array_replace(
+            array_intersect_key($order, $rootCollections),
+            $rootCollections
+        );
+        foreach ($rootCollections as $rootCollectionId => $rootCollection) {
             $pairs[$rootCollectionId] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
 
             $this->_resetCache();
             $this->getDescendantTree($rootCollectionId, true);
+            $this->_cache = array_replace(
+                array_intersect_key($order, $this->_cache),
+                $this->_cache
+            );
             foreach ($this->_cache as $collectionId => $collectionDepth) {
                 $collection = $this->getCollection($collectionId);
                 $pairs[$collectionId] = str_repeat($padding, $collectionDepth) . ' ';
