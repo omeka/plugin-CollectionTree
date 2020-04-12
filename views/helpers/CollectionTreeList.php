@@ -20,31 +20,34 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
      * @see CollectionTreeTable::getDescendantTree()
      * @param array $collectionTree
      * @param bool $linkToCollectionShow
+     * @param bool $linkToCurrentCollectionShow Require option $linkToCollectionShow.
      * @return string
      */
-    public function collectionTreeList($collectionTree, $linkToCollectionShow = true)
+    public function collectionTreeList($collectionTree, $linkToCollectionShow = true, $linkToCurrentCollection = false)
     {
         if (!$collectionTree) {
             return;
         }
 
+        $linkToCurrentCollection = $linkToCollectionShow && $linkToCurrentCollection;
+
         $collectionTable = get_db()->getTable('Collection');
         $html = '<ul>';
         foreach ($collectionTree as $collection) {
-            $html .= '<li>';
-            // No link to current collection.
-            if ($linkToCollectionShow && !isset($collection['current']) && isset($collection['id'])) {
+            $html .= '<li' . (isset($collection['current']) ? ' class="active"' : '') . '>';
+            // No link to current collection, unless specified.
+            if ($linkToCollectionShow && ($linkToCurrentCollection || !isset($collection['current'])) && isset($collection['id'])) {
                 $html .= link_to_collection(null, array(), 'show', $collectionTable->find($collection['id']));
             }
             // No link to private parent collection.
             elseif (!isset($collection['id'])) {
                 $html .= __('[Unavailable]');
             }
-            // Link to current collection.
+            // Display name of current collection.
             else {
                 $html .= empty($collection['name']) ? __('[Untitled]') : $collection['name'];
             }
-            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow);
+            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow, $linkToCurrentCollection);
             $html .= '</li>';
         }
         $html .= '</ul>';
