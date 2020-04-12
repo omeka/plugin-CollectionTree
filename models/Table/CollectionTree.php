@@ -1,14 +1,14 @@
 <?php
 /**
  * Collection Tree
- * 
+ *
  * @copyright Copyright 2007-2012 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
  */
 
 /**
  * The collection_trees table.
- * 
+ *
  * @package Omeka\Plugins\CollectionTree
  */
 class Table_CollectionTree extends Omeka_Db_Table
@@ -56,7 +56,8 @@ class Table_CollectionTree extends Omeka_Db_Table
         $select->joinLeft(
             array($alias => $this->getTableName()),
             "$aliasCollection.id = $alias.collection_id",
-            array('name'));
+            array('name')
+        );
         $select->where("$aliasCollection.id != ?", $collectionId);
 
         // If not a new collection, cache descendant collection IDs and exclude
@@ -133,7 +134,6 @@ class Table_CollectionTree extends Omeka_Db_Table
         $options = array();
 
         foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
-
             $options[$rootCollectionId] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
 
             $this->_resetCache();
@@ -228,7 +228,6 @@ class Table_CollectionTree extends Omeka_Db_Table
         // Iterate the child collections.
         $descendantTree = array_values($this->getChildCollections($collectionId));
         for ($i = 0; $i < count($descendantTree); $i++) {
-
             if ($cacheDescendantInfo) {
                 $this->_cache[$descendantTree[$i]['id']] = $collectionDepth;
             }
@@ -237,7 +236,8 @@ class Table_CollectionTree extends Omeka_Db_Table
             $children = $this->getDescendantTree(
                 $descendantTree[$i]['id'],
                 $cacheDescendantInfo,
-                $collectionDepth);
+                $collectionDepth
+            );
 
             // Assign the child collections to the descendant tree.
             if ($children) {
@@ -321,10 +321,10 @@ class Table_CollectionTree extends Omeka_Db_Table
 
     /**
      * Get all collection IDs to which the passed collection cannot be assigned.
-     * 
-     * A collection cannot be assigned to a collection in its descendant tree, 
+     *
+     * A collection cannot be assigned to a collection in its descendant tree,
      * including itself.
-     * 
+     *
      * @param int $collectionId
      * @return array
      */
@@ -352,7 +352,8 @@ class Table_CollectionTree extends Omeka_Db_Table
             $select->joinLeft(
                 array($alias => $this->getTableName()),
                 "$aliasCollection.id = $alias.collection_id",
-                array('parent_collection_id', 'name'));
+                array('parent_collection_id', 'name')
+            );
 
             // Order alphabetically if configured to do so.
             if (get_option('collection_tree_alpha_order')) {
