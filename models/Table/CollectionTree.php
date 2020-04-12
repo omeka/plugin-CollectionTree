@@ -165,6 +165,37 @@ class Table_CollectionTree extends Omeka_Db_Table
     }
 
     /**
+     * Return the collection tree as a one-dimensional array, with children.
+     *
+     * @return array
+     */
+    public function getCollectionList()
+    {
+        $result = array();
+
+        foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
+            $this->_resetCache();
+            $this->getDescendantTree($rootCollectionId, true);
+            $result[$rootCollectionId]['id'] = $rootCollectionId;
+            $result[$rootCollectionId]['name'] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
+            $result[$rootCollectionId]['depth'] = 0;
+            $result[$rootCollectionId]['parent'] = null;
+            $result[$rootCollectionId]['children'] = array_keys($this->_cache);
+            foreach ($this->_cache as $collectionId => $collectionDepth) {
+                $collection = $this->getCollection($collectionId);
+                $result[$collectionId]['id'] = $collectionId;
+                $result[$collectionId]['name'] = $collection && $collection['name'] ? $collection['name'] : __('[Untitled]');
+                $result[$collectionId]['depth'] = $collectionDepth;
+                $result[$collectionId]['parent'] = $collection && $collection['parent_collection_id'] ? $collection['parent_collection_id'] : null ;
+                $result[$collectionId]['children'] = array_keys($this->getChildCollections($collectionId));
+            }
+        }
+        $this->_resetCache();
+
+        return $result;
+    }
+
+    /**
      * Get the entire collection tree of the specified collection.
      *
      * @param int $collectionId
