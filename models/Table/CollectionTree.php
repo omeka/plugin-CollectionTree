@@ -219,6 +219,41 @@ class Table_CollectionTree extends Omeka_Db_Table
     }
 
     /**
+     * Get the ancestors of the specified collection as a flat array.
+     *
+     * @param int $collectionId
+     * @param bool $includeSelf Include the passed collection.
+     * @return array
+     */
+    public function getAncestors($collectionId, $includeSelf = false)
+    {
+        $list = array();
+
+        // Distinguish between the passed collection and its descendants.
+        $parentCollectionId = $collectionId;
+
+        // Iterate the parent collections, starting with the passed collection
+        // and stopping at the root collection.
+        do {
+            $collection = $this->getCollection($parentCollectionId);
+            $parentCollectionId = $collection['parent_collection_id'];
+
+            // Don't include the passed collection when not building the entire
+            // collection tree, unless specified.
+            if (!$includeSelf && $collectionId == $collection['id']) {
+                continue;
+            }
+
+            // Append the parent collection to the collection list, pushing the
+            // descendant tree to the second element.
+            $list[] = $collection;
+
+        } while ($collection['parent_collection_id']);
+
+        return array_reverse($list);
+    }
+
+    /**
      * Recursively get the descendant tree of the specified collection.
      *
      * @param int $collectionId
