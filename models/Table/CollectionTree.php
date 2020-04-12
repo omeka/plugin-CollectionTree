@@ -167,11 +167,16 @@ class Table_CollectionTree extends Omeka_Db_Table
      * @param int $collectionId
      * @param bool $getCollectionTree Include the passed collection, its
      * ancestor tree, and its descendant tree.
+     * @param bool $includeSelf Include the passed collection. Always true when
+     * the option $getCollectionTree is set.
      * @return array
      */
-    public function getAncestorTree($collectionId, $getCollectionTree = false)
+    public function getAncestorTree($collectionId, $getCollectionTree = false, $includeSelf = false)
     {
         $tree = array();
+
+        // Self is always included in the whole collection tree.
+        $includeSelf = $getCollectionTree || $includeSelf;
 
         // Distinguish between the passed collection and its descendants.
         $parentCollectionId = $collectionId;
@@ -183,16 +188,18 @@ class Table_CollectionTree extends Omeka_Db_Table
             $parentCollectionId = $collection['parent_collection_id'];
 
             // Don't include the passed collection when not building the entire
-            // collection tree.
-            if (!$getCollectionTree && $collectionId == $collection['id']) {
+            // collection tree, unless specified.
+            if (!$includeSelf && $collectionId == $collection['id']) {
                 continue;
             }
 
             // If set to return the entire collection tree, add the descendant
             // tree to the passed collection and flag it as current.
-            if ($getCollectionTree && $collectionId == $collection['id']) {
-                $collection['children'] = $this->getDescendantTree($collection['id']);
+            if ($includeSelf && $collectionId == $collection['id']) {
                 $collection['current'] = true;
+                if ($getCollectionTree) {
+                    $collection['children'] = $this->getDescendantTree($collection['id']);
+                }
             }
 
             // Prepend the parent collection to the collection tree, pushing the
