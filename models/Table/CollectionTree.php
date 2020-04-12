@@ -131,22 +131,22 @@ class Table_CollectionTree extends Omeka_Db_Table
             $padding = '-';
         }
 
-        $options = array();
+        $pairs = array();
 
         foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
-            $options[$rootCollectionId] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
+            $pairs[$rootCollectionId] = $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
 
             $this->_resetCache();
             $this->getDescendantTree($rootCollectionId, true);
             foreach ($this->_cache as $collectionId => $collectionDepth) {
                 $collection = $this->getCollection($collectionId);
-                $options[$collectionId] = str_repeat($padding, $collectionDepth) . ' ';
-                $options[$collectionId] .= $collection['name'] ? $collection['name'] : __('[Untitled]');
+                $pairs[$collectionId] = str_repeat($padding, $collectionDepth) . ' ';
+                $pairs[$collectionId] .= $collection && $collection['name'] ? $collection['name'] : __('[Untitled]');
             }
         }
         $this->_resetCache();
 
-        return $options;
+        return $pairs;
     }
 
     /**
