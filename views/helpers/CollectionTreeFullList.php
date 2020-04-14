@@ -1,7 +1,7 @@
 <?php
 /**
  * Collection Tree
- * 
+ *
  * @copyright Copyright 2007-2012 Roy Rosenzweig Center for History and New Media
  * @license http://www.gnu.org/licenses/gpl-3.0.txt GNU GPLv3
  */
@@ -34,8 +34,8 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
             } else {
                 $html .= $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
             }
-            $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
-            $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow);
+            $descendantTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
+            $html .= $this->view->collectionTreeList($descendantTree, $linkToCollectionShow);
             $html .= '</li>';
         }
         $html .= '</ul></div>';
