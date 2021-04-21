@@ -50,8 +50,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     protected $_options = array(
         'collection_tree_alpha_order' => 0,
-        'collection_tree_browse_only_root' => 0,
         'collection_tree_show_subcollections' => 0,
+        'collection_tree_hide_orphans' => 0,
+        'collection_tree_browse_only_root' => 0,
         'collection_tree_search_descendant' => 0,
     );
 
@@ -356,10 +357,12 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     protected function _appendToCollectionsShow($collection)
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
-        echo get_view()->partial(
-            'collections/collection-tree-list.php', 
-            array('collection_tree' => $collectionTree)
-        );
+        if (count($collectionTree[0]['children']) > 0 || !get_option('collection_tree_hide_orphans')) {
+            echo get_view()->partial(
+                'collections/collection-tree-list.php', 
+                array('collection_tree' => $collectionTree)
+            );
+        }
     }
     
     /**
