@@ -1,10 +1,12 @@
 jQuery(document).ready(function () {
-	var $ = jQuery;
+	var treeExpanded = false;
 
 	init();
 
 	function init() {
-		jQuery("#collection-tree ul:not(:first)").hide();                                                       
+		if (!treeExpanded) {
+			jQuery("#collection-tree ul:not(:first)").hide();
+		}
 
 		jQuery("#collection-tree li").prepend("<span class='collection-tree-icon handle'></span>");
 
