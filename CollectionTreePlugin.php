@@ -55,7 +55,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'collection_tree_show_subcollections' => 0,
         'collection_tree_hide_orphans' => 0,
         'collection_tree_treeview_style' => 0,
-        'collection_tree_browse_only_root' => 0,
+        'collection_tree_treeview_expanded' => 0,
+	'collection_tree_browse_only_root' => 0,
         'collection_tree_search_descendant' => 0,
     );
 
