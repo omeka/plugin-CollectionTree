@@ -1,5 +1,5 @@
 jQuery(document).ready(function () {
-	var treeExpanded = false;
+	var treeExpanded = (jQuery("#collection-tree").hasClass("treeExpanded"));
 
 	init();
 
