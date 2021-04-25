@@ -48,7 +48,40 @@
     </div>
 </div>
 
+<div class="field">
+    <div class="two columns alpha">
+        <?php echo $this->formLabel('collection_tree_treeview_style', __('Treeview style')); ?>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php
+            echo __('If checked, collection trees are displayed in treeview style.');
+        ?></p>
+        <?php echo $this->formCheckbox(
+            'collection_tree_treeview_style', 
+            null,
+            array('checked' => (bool) get_option('collection_tree_treeview_style'))
+        ); ?>
+    </div>
+</div>
+
+<div class="field">
+    <div class="two columns alpha">
+        <?php echo $this->formLabel('collection_tree_treeview_expanded', __('Treeview expanded')); ?>
+    </div>
+    <div class="inputs five columns omega">
+        <p class="explanation"><?php
+            echo __('If checked, treeview is initially fully expanded in Public and Admin Collection pages.');
+        ?></p>
+        <?php echo $this->formCheckbox(
+            'collection_tree_treeview_expanded', 
+            null,
+            array('checked' => (bool) get_option('collection_tree_treeview_expanded'))
+        ); ?>
+    </div>
+</div>
+
 <h2><?php echo __("Browsing & Searching"); ?></h2>
+
 <div class="field">
     <div class="two columns alpha">
         <?php echo $this->formLabel('collection_tree_browse_only_root', __('Browse root-level collections only')); ?>

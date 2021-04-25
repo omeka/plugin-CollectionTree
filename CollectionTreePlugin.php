@@ -32,6 +32,8 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'public_items_search',
         'admin_collections_show',
         'public_collections_show',
+        'admin_head',
+        'public_head'
     );
 
     /**
@@ -52,7 +54,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'collection_tree_alpha_order' => 0,
         'collection_tree_show_subcollections' => 0,
         'collection_tree_hide_orphans' => 0,
-        'collection_tree_browse_only_root' => 0,
+        'collection_tree_treeview_style' => 0,
+        'collection_tree_treeview_expanded' => 0,
+	'collection_tree_browse_only_root' => 0,
         'collection_tree_search_descendant' => 0,
     );
 
@@ -364,7 +368,28 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             );
         }
     }
-    
+
+    /**
+     * Sets css and js in case treeview style is chosen
+     */
+    public function hookPublicHead($args)
+    {
+		if (get_option('collection_tree_treeview_style')) {
+			queue_css_file('file-explore');
+			queue_js_file('file-explore');
+		}
+    }
+
+    /**
+     * Sets css and js in case treeview style is chosen
+     */
+    public function hookAdminHead($args)
+    {
+		if (get_option('collection_tree_treeview_style')) {
+			queue_css_file('file-explore');
+			queue_js_file('file-explore');
+		}
+    }    
     /**
      * Add the collection tree page to the admin navigation.
      */
