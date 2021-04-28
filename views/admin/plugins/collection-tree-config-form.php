@@ -22,7 +22,7 @@
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
-            echo __('If checked, on public collection show pages displays items belonging to all subcollections (especially useful when root collections are empty and used as main categories).');
+            echo __('If checked, public collection show pages display items belonging to all subcollections (especially useful when root collections are empty and used as main categories).');
         ?></p>
         <?php echo $this->formCheckbox(
             'collection_tree_show_subcollections', 
@@ -38,7 +38,7 @@
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
-            echo __('If checked, no collection tree will be shown for collections without parent nor children.');
+            echo __('If checked, no collection tree is shown for collections without parent nor children.');
         ?></p>
         <?php echo $this->formCheckbox(
             'collection_tree_hide_orphans', 
@@ -70,13 +70,14 @@
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
-            echo __('If checked, treeview is initially fully expanded in Public and Admin Collection pages.');
+            echo __('Where the treeview should initially be fully expanded in Collection pages.');
         ?></p>
-        <?php echo $this->formCheckbox(
-            'collection_tree_treeview_expanded', 
-            null,
-            array('checked' => (bool) get_option('collection_tree_treeview_expanded'))
-        ); ?>
+        <?php echo $this->formSelect(
+			'collection_tree_treeview_expanded', 
+			get_option('collection_tree_treeview_expanded'), 
+			null, 
+			array('nowhere' => __('Nowhere'), 'admin' => __('Only Admin side'), 'public' => __('Only Public side'), 'everywhere' => __('Both Admin and Public sides'))
+		); ?>
     </div>
 </div>
 
