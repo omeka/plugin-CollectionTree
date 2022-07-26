@@ -329,7 +329,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     {
         return '<div class="field">
             <div class="two columns alpha">
-                <label for="public">' . __('Expand to subcollections') . '</label>
+                <label for="subcollections">' . __('Expand to subcollections') . '</label>
             </div>
             <div class="five columns omega inputs">
                 ' . $args['view']->formCheckbox('subcollections', null, array('checked' => (bool) get_option('collection_tree_search_descendant'))) . '
