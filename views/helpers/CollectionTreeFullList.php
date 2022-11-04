@@ -26,7 +26,7 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
             return null;
         }
         $collectionTable = get_db()->getTable('Collection');
-        $html = '<div id="collection-tree"><ul>';
+        $html = '<h1>Collection Tree</h1><div id="collection-tree"><ul>';
         foreach ($rootCollections as $rootCollection) {
             $html .= '<li>';
             if ($linkToCollectionShow) {
