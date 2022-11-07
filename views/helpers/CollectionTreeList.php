@@ -20,9 +20,10 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
      * @see CollectionTreeTable::getDescendantTree()
      * @param array $collectionTree
      * @param bool $linkToCollectionShow
+     * @param string $parentString
      * @return string
      */
-    public function collectionTreeList($collectionTree, $linkToCollectionShow = true)
+    public function collectionTreeList($collectionTree, $linkToCollectionShow = true, $parentString = '')
     {
         if (!$collectionTree) {
             return;
@@ -31,10 +32,17 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
         $collectionTable = get_db()->getTable('Collection');
         $html = '<ul>';
         foreach ($collectionTree as $collection) {
+            $path = '';
+            if (strlen($parentString) > 0) {
+                $path = $parentString.' / '.$collection['name'];
+            }
+            else {
+                $path = $collection['name'];
+            }
             $html .= '<li>';
             // No link to current collection.
             if ($linkToCollectionShow && !isset($collection['current']) && isset($collection['id'])) {
-                $html .= link_to_collection(null, array(), 'show', $collectionTable->find($collection['id']));
+                $html .= link_to_collection(null, ["aria-label" => $path], 'show', $collectionTable->find($collection['id']));
             }
             // No link to private parent collection.
             elseif (!isset($collection['id'])) {
@@ -44,7 +52,7 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
             else {
                 $html .= empty($collection['name']) ? __('[Untitled]') : $collection['name'];
             }
-            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow);
+            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow, $path);
             $html .= '</li>';
         }
         $html .= '</ul>';
