@@ -3,20 +3,21 @@
 # This file is distributed under the same license as the Omeka package.
 # 
 # Translators:
+# Appukonrad <appukonrad@gmail.com>, 2017
 # MICHAL D. <black23@gmail.com>, 2013
 msgid ""
 msgstr ""
-"Project-Id-Version: Omeka\n"
+"Project-Id-Version: Omeka Classic\n"
 "Report-Msgid-Bugs-To: http://github.com/omeka/plugin-SimpleVocab/issues\n"
 "POT-Creation-Date: 2012-11-30 21:49-0500\n"
-"PO-Revision-Date: 2013-09-06 20:12+0000\n"
-"Last-Translator: MICHAL D. <black23@gmail.com>\n"
-"Language-Team: Czech (http://www.transifex.com/projects/p/omeka/language/cs/)\n"
+"PO-Revision-Date: 2013-04-02 15:27+0000\n"
+"Last-Translator: Appukonrad <appukonrad@gmail.com>, 2017\n"
+"Language-Team: Czech (http://app.transifex.com/omeka/omeka/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: cs\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
 
 #: CollectionTreePlugin.php:253 CollectionTreePlugin.php:262
 #: views/shared/collections/collection-tree-list.php:1
@@ -26,30 +27,30 @@ msgstr "Strom sbírky"
 
 #: CollectionTreePlugin.php:274
 msgid "No parent collection"
-msgstr ""
+msgstr "Žádná mateřská sbírka"
 
 #: models/CollectionTree.php:27 models/CollectionTree.php:35
 msgid "Parent Collection"
-msgstr ""
+msgstr "Mateřská sbírka"
 
 #: models/CollectionTree.php:28
 msgid "A collection cannot be a parent to itself."
-msgstr ""
+msgstr "Sbírka nemůže být mateřskou sama sobě."
 
 #: models/CollectionTree.php:36
 msgid ""
 "A collection cannot be assigned to a collection in its descendant tree."
-msgstr ""
+msgstr "Sbírku nelze přiřadit sbírce ve stromu potomka."
 
 #: views/admin/collections/collection-tree-parent-form.php:3
 msgid "Select a Parent Collection"
-msgstr ""
+msgstr "Výběr mateřské sbírky"
 
 #: views/admin/collections/collection-tree-parent-form.php:6
 msgid ""
 "A collection cannot be a parent to itself, nor can it be assigned to a "
 "collection in its descendant tree."
-msgstr ""
+msgstr "Sbírka nemůže být rodičem sama o sobě, ani nemůže být přiřazena ke sbírce v jeho potomku."
 
 #: views/admin/plugins/collection-tree-config-form.php:3
 msgid "Order alphabetically?"
@@ -59,7 +60,7 @@ msgstr "Seřadit abecedně?"
 msgid ""
 "Order the collection tree alphabetically? This does not affect the order of "
 "the collections browse page."
-msgstr ""
+msgstr "Seřadit strom sbírky abecedně? To to nemá vliv na řazení stránky při procházení sbírek."
 
 #: views/shared/index/index.php:5
 msgid "There are no collections."

@@ -3,26 +3,28 @@
 # This file is distributed under the same license as the Omeka package.
 # 
 # Translators:
+# Dmtech MKII <dmtech.mkii@gmail.com>, 2021
+# Josu Aramberri <jaramberri@i2basque.es>, 2016
 # Rubén Alcaraz Martínez <rubenalcarazmartinez@gmail.com>, 2013
 msgid ""
 msgstr ""
-"Project-Id-Version: Omeka\n"
+"Project-Id-Version: Omeka Classic\n"
 "Report-Msgid-Bugs-To: http://github.com/omeka/plugin-SimpleVocab/issues\n"
 "POT-Creation-Date: 2012-11-30 21:49-0500\n"
-"PO-Revision-Date: 2013-04-04 09:51+0000\n"
-"Last-Translator: Rubén Alcaraz Martínez <rubenalcarazmartinez@gmail.com>\n"
-"Language-Team: Spanish (http://www.transifex.com/projects/p/omeka/language/es/)\n"
+"PO-Revision-Date: 2013-04-02 15:27+0000\n"
+"Last-Translator: Dmtech MKII <dmtech.mkii@gmail.com>, 2021\n"
+"Language-Team: Spanish (http://app.transifex.com/omeka/omeka/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: es\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #: CollectionTreePlugin.php:253 CollectionTreePlugin.php:262
 #: views/shared/collections/collection-tree-list.php:1
 #: views/shared/index/index.php:1
 msgid "Collection Tree"
-msgstr "Collection Tree"
+msgstr "Colecciones"
 
 #: CollectionTreePlugin.php:274
 msgid "No parent collection"
@@ -59,7 +61,7 @@ msgstr "¿Ordenar alfabéticamente?"
 msgid ""
 "Order the collection tree alphabetically? This does not affect the order of "
 "the collections browse page."
-msgstr "¿Ordenar el árbol de colección jerárquicamente? Esto no afectará al orden de la colección en la página de navegación."
+msgstr "¿Ordenar jerárquicamente el árbol de la colección? Esto no afectará el orden de la colección en la página de navegación."
 
 #: views/shared/index/index.php:5
 msgid "There are no collections."
