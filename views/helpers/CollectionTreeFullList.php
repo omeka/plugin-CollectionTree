@@ -29,10 +29,11 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
         $html = '<div id="collection-tree"><ul>';
         foreach ($rootCollections as $rootCollection) {
             $html .= '<li>';
+            $collectionObject = $collectionTable->find($rootCollection['id']);
             if ($linkToCollectionShow) {
-                $html .= link_to_collection(null, array(), 'show', $collectionTable->find($rootCollection['id']));
+                $html .= link_to_collection(null, array(), 'show', $collectionObject);
             } else {
-                $html .= $rootCollection['name'] ? $rootCollection['name'] : __('[Untitled]');
+                $html .= metadata($collectionObject, array('Dublin Core', 'Title'));
             }
             $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
             $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow);
