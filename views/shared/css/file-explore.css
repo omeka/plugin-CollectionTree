@@ -1,0 +1,54 @@
+#collection-tree ul {
+	list-style-type: none;
+	font-size: 1em;
+	line-height: 1.8em;
+	margin-top: 0;
+	margin-left: 10px;
+	padding-left: 18px;
+	border-left: 1px dotted #aaa;
+}
+
+#collection-tree li {
+	position: relative;
+}
+
+#collection-tree li a{
+	text-decoration: none;
+}
+
+#collection-tree li:before{
+	position: absolute;
+	display: block;
+	content: " ";
+	width: 10px;
+	height: 1px;
+	border-bottom: 1px dotted #aaa;
+	top: .6em;
+	left: -14px;
+}
+
+.collection-tree-icon {
+	display: block;
+	font-family: FontAwesome;
+	font-size: 1.2em;	
+}
+
+.handle:before {
+	margin-right: .2em;
+	content: '\f0f6';
+	float: left;
+}
+
+.collapsed:before {
+	margin-right: .2em;
+	color: #FFD04E;
+	content: "\f07b";
+	cursor: pointer;
+}
+
+.expanded:before {
+	margin-right: .2em;
+	color: #FFD04E;
+	content: "\f07c";
+	cursor: pointer;
+}
