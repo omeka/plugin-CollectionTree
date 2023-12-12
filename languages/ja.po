@@ -1,0 +1,66 @@
+# Translation for the Collection Tree plugin for Omeka.
+# Copyright (C) 2012 Roy Rosenzweig Center for History and New Media
+# This file is distributed under the same license as the Omeka package.
+# 
+# Translators:
+# Naosuke Okamoto, 2018
+msgid ""
+msgstr ""
+"Project-Id-Version: Omeka Classic\n"
+"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-SimpleVocab/issues\n"
+"POT-Creation-Date: 2012-11-30 21:49-0500\n"
+"PO-Revision-Date: 2013-04-02 15:27+0000\n"
+"Last-Translator: Naosuke Okamoto, 2018\n"
+"Language-Team: Japanese (http://app.transifex.com/omeka/omeka/language/ja/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: CollectionTreePlugin.php:253 CollectionTreePlugin.php:262
+#: views/shared/collections/collection-tree-list.php:1
+#: views/shared/index/index.php:1
+msgid "Collection Tree"
+msgstr "コレクション・ツリー"
+
+#: CollectionTreePlugin.php:274
+msgid "No parent collection"
+msgstr "親コレクションなし"
+
+#: models/CollectionTree.php:27 models/CollectionTree.php:35
+msgid "Parent Collection"
+msgstr "親コレクション"
+
+#: models/CollectionTree.php:28
+msgid "A collection cannot be a parent to itself."
+msgstr "コレクションは自身の親になることはできません。"
+
+#: models/CollectionTree.php:36
+msgid ""
+"A collection cannot be assigned to a collection in its descendant tree."
+msgstr "コレクションは、その子ツリー内のコレクションに割り当てることはできません。"
+
+#: views/admin/collections/collection-tree-parent-form.php:3
+msgid "Select a Parent Collection"
+msgstr "親コレクションを選択する"
+
+#: views/admin/collections/collection-tree-parent-form.php:6
+msgid ""
+"A collection cannot be a parent to itself, nor can it be assigned to a "
+"collection in its descendant tree."
+msgstr "コレクションは自身の親にすることも、子ツリーのコレクションに割り当てることもできません。"
+
+#: views/admin/plugins/collection-tree-config-form.php:3
+msgid "Order alphabetically?"
+msgstr "アルファベット順にしますか？"
+
+#: views/admin/plugins/collection-tree-config-form.php:6
+msgid ""
+"Order the collection tree alphabetically? This does not affect the order of "
+"the collections browse page."
+msgstr "コレクションツリーをアルファベット順に並べ替えますか？ これは、コレクションブラウズページの順序には影響しません。"
+
+#: views/shared/index/index.php:5
+msgid "There are no collections."
+msgstr "コレクションはありません。"

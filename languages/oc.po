@@ -1,0 +1,68 @@
+# Translation for the Collection Tree plugin for Omeka.
+# Copyright (C) 2012 Roy Rosenzweig Center for History and New Media
+# This file is distributed under the same license as the Omeka package.
+# 
+# Translators:
+# Cédric Valmary <cvalmary@yahoo.fr>, 2016
+# Julien Sicot <julien.sicot@gmail.com>, 2013
+# symac <wikitipiac@laposte.net>, 2014
+msgid ""
+msgstr ""
+"Project-Id-Version: Omeka Classic\n"
+"Report-Msgid-Bugs-To: http://github.com/omeka/plugin-SimpleVocab/issues\n"
+"POT-Creation-Date: 2012-11-30 21:49-0500\n"
+"PO-Revision-Date: 2013-04-02 15:27+0000\n"
+"Last-Translator: Cédric Valmary <cvalmary@yahoo.fr>, 2016\n"
+"Language-Team: Occitan (post 1500) (http://app.transifex.com/omeka/omeka/language/oc/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: oc\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: CollectionTreePlugin.php:253 CollectionTreePlugin.php:262
+#: views/shared/collections/collection-tree-list.php:1
+#: views/shared/index/index.php:1
+msgid "Collection Tree"
+msgstr "Ierarquia de la colleccion"
+
+#: CollectionTreePlugin.php:274
+msgid "No parent collection"
+msgstr "Pas cap de colleccion parenta"
+
+#: models/CollectionTree.php:27 models/CollectionTree.php:35
+msgid "Parent Collection"
+msgstr "Colleccion parenta"
+
+#: models/CollectionTree.php:28
+msgid "A collection cannot be a parent to itself."
+msgstr "Una colleccion pòt pas èsser parenta d'ela-meteissa."
+
+#: models/CollectionTree.php:36
+msgid ""
+"A collection cannot be assigned to a collection in its descendant tree."
+msgstr "Una colleccion pòt pas èsser associada a una colleccion qu'aparten a sos descendents."
+
+#: views/admin/collections/collection-tree-parent-form.php:3
+msgid "Select a Parent Collection"
+msgstr "Seleccionar la colleccion parenta"
+
+#: views/admin/collections/collection-tree-parent-form.php:6
+msgid ""
+"A collection cannot be a parent to itself, nor can it be assigned to a "
+"collection in its descendant tree."
+msgstr "Una colleccion pòt pas èsser parent d'ela-meteissa, e pòt pas tanpauc èsser assignada a una colleccion qu'aparten a sa descendéncia."
+
+#: views/admin/plugins/collection-tree-config-form.php:3
+msgid "Order alphabetically?"
+msgstr "Òrdre alfabetic ?"
+
+#: views/admin/plugins/collection-tree-config-form.php:6
+msgid ""
+"Order the collection tree alphabetically? This does not affect the order of "
+"the collections browse page."
+msgstr "Triar la ierarquia de las colleccions per òrdre alfabetic ? Aquò aurà pas d'incidéncia sus l'òrdre de la pagina de percors de las colleccions."
+
+#: views/shared/index/index.php:5
+msgid "There are no collections."
+msgstr "Cap de colleccion pas disponibla."
