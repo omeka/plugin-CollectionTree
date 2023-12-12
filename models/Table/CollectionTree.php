@@ -311,14 +311,9 @@ class Table_CollectionTree extends Omeka_Db_Table
                 "$aliasCollection.id = $alias.collection_id",
                 array('parent_collection_id'));
 
-            // Order alphabetically if configured to do so.
-            if (get_option('collection_tree_alpha_order')) {
-                $select->order("$alias.name ASC");
-            }
-
             $alpha = get_option('collection_tree_alpha_order');
             $collections = $this->fetchAssoc($select);
-            foreach ($collections as $collection) {
+            foreach ($collections as &$collection) {
                 $collection['name'] = $collectionNamesById[$collection['id']];
 
                 // If we need to maintain alpha sort, abuse the already alpha
