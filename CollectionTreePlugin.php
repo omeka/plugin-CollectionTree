@@ -273,7 +273,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             // Collection can be an object when not called from search form.
             ? $params['descendant_or_self']->id
             // Else this should be an integer.
-            : (integer) $params['descendant_or_self'];
+            : (int) $params['descendant_or_self'];
 
         if (empty($collection)) {
             return;
