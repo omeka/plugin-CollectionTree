@@ -116,9 +116,9 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookUpgrade($args)
     {
-        // Prior to Omeka 2.0, collection names were stored in the collections 
-        // table; now they are stored as Dublin Core Title. This upgrade 
-        // compensates for this by moving the collection names to the 
+        // Prior to Omeka 2.0, collection names were stored in the collections
+        // table; now they are stored as Dublin Core Title. This upgrade
+        // compensates for this by moving the collection names to the
         // collection_trees table.
         if (version_compare($args['old_version'], '2.0', '<')) {
             
@@ -357,7 +357,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
     {
         $collectionTree = $this->_db->getTable('CollectionTree')->getCollectionTree($collection->id);
         echo get_view()->partial(
-            'collections/collection-tree-list.php', 
+            'collections/collection-tree-list.php',
             array('collection_tree' => $collectionTree)
         );
     }
@@ -398,7 +398,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             $parentCollectionId = 0;
         }
         $tabs['Parent Collection'] = get_view()->partial(
-            'collections/collection-tree-parent-form.php', 
+            'collections/collection-tree-parent-form.php',
             array('options' => $options, 'parent_collection_id' => $parentCollectionId)
         );
         return $tabs;
