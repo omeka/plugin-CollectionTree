@@ -15,7 +15,6 @@ class CollectionTree extends Omeka_Record_AbstractRecord
 {
     public $parent_collection_id;
     public $collection_id;
-    public $name;
     
     /**
      * Validate the record.

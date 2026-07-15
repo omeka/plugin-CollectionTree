@@ -70,7 +70,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
           `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
           `parent_collection_id` int(10) unsigned NOT NULL,
           `collection_id` int(10) unsigned NOT NULL,
-          `name` text COLLATE utf8_unicode_ci,
           PRIMARY KEY (`id`),
           UNIQUE KEY `collection_id` (`collection_id`)
         ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
@@ -86,7 +85,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
             $collectionTree = new CollectionTree;
             $collectionTree->parent_collection_id = 0;
             $collectionTree->collection_id = $collection['id'];
-            $collectionTree->name = metadata($collectionObj, array('Dublin Core', 'Title'));
             $collectionTree->save();
         }
     }
@@ -141,6 +139,10 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
                 $collectionTree->name = metadata($collectionObj, array('Dublin Core', 'Title'));
                 $collectionTree->save();
             }
+        }
+
+        if (version_compare($args['old_version'], '2.2', '<')) {
+            $this->_db->query("ALTER TABLE {$this->_db->CollectionTree} DROP COLUMN `name`");
         }
     }
 
@@ -201,8 +203,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         if (isset($args['post']['collection_tree_parent_collection_id'])) {
             $collectionTree->parent_collection_id = $args['post']['collection_tree_parent_collection_id'];
         }
-        
-        $collectionTree->name = metadata($args['record'], array('Dublin Core', 'Title'));
         
         // Fail silently if the record does not validate.
         $collectionTree->save();
