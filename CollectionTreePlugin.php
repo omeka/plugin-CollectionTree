@@ -241,19 +241,27 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
      */
     public function hookCollectionsBrowseSql($args)
     {
-        if (!is_admin_theme()) {
-            if (!get_option('collection_tree_browse_only_root')) {
-                return;
-            }
-            $select = $args['select'];
-            $sql = "
-            collections.id NOT IN (
-                SELECT collection_trees.collection_id
-                FROM {$this->_db->CollectionTree} collection_trees
-                WHERE collection_trees.parent_collection_id != 0
-            )";
-            $select->where($sql);
+        if (is_admin_theme()) {
+            return;
         }
+        if (!get_option('collection_tree_browse_only_root')) {
+            return;
+        }
+
+        $select = $args['select'];
+        $params = $args['params'];
+
+        if (!empty($params['collection_tree_all_collections'])) {
+            return;
+        }
+
+        $sql = "
+        collections.id NOT IN (
+            SELECT collection_trees.collection_id
+            FROM {$this->_db->CollectionTree} collection_trees
+            WHERE collection_trees.parent_collection_id != 0
+        )";
+        $select->where($sql);
     }
 
     /**

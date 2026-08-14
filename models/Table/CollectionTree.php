@@ -309,7 +309,7 @@ class Table_CollectionTree extends Omeka_Db_Table
     {
         if (is_null($this->_collections)) {
             $table = $this->_db->getTable('Collection');
-            $collectionNamesById = $table->findPairsForSelectForm();
+            $collectionNamesById = $table->findPairsForSelectForm(['collection_tree_all_collections' => true]);
 
             $alias = $this->getTableAlias();
             $aliasCollection = $table->getTableAlias();
