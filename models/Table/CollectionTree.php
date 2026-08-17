@@ -143,6 +143,14 @@ class Table_CollectionTree extends Omeka_Db_Table
         // and stopping at the root collection.
         do {
             $collection = $this->getCollection($parentCollectionId);
+            if (!$collection) {
+                $collection = [
+                    'id' => null,
+                    'parent_collection_id' => null,
+                    'name' => null,
+                ];
+            }
+
             $parentCollectionId = $collection['parent_collection_id'];
 
             // Don't include the passed collection when not building the entire
