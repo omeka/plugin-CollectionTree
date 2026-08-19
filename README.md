@@ -1,36 +1,27 @@
-Collection Tree (plugin for Omeka)
+Collection Tree plugin for Omeka Classic
 ==================================
 
-
-Summary
--------
-
-This plugin for [Omeka] gives administrators the ability to create a
-hierarchical tree of their collections.
-
+This plugin for [Omeka] Classic gives administrators the ability to create a hierarchical tree of their collections. A collection can have at most one parent collection, but a collection may have multiple child collections.
 
 Installation
 ------------
 
-Uncompress files and rename plugin folder "CollectionTree".
+This plugin has no requirements or dependencies. 
 
-Then install it like any other Omeka plugin and follow the config instructions.
+Uncompress files and rename plugin folder "CollectionTree". Then install it like any other Omeka plugin and follow the config instructions.
 
+Configuration
+------------
 
-Warning
--------
+You can configure the plugin to adjust the display by checking the following options:
 
-Use it at your own risk.
+**Order alphabetically**: This setting orders the Collection Tree alphabetically, but does not affect the order of the collections browse page. By default collections will be ordered by creation date, i.e. by collection ID. Each level of the hierarchy will be alphabetized with this setting. Note that this may not work as expected if you use text formatting, such as italics or bold, inside your collection titles. 
 
-It's always recommended to backup your files and database so you can roll back
-if needed.
+**Browse root-level collections only**: This setting limits the public collections browse page so it only includes top-level (parent) collections and does not show subcollections (any collections nested inside others).
 
+**Show subcollections items**: This setting includes all of the items from the subcollections in the list of items on the parent collections' show page. For example, a top-level collection with 10 items contains another collection that itself has 29 items. Check this to make the top-level collection appear to contain 39 items instead.
 
-Troubleshooting
----------------
-
-See online issues on [Collection Tree issues] page on GitHub.
-
+**Expand search to include subcollection items by default**: This setting will mean that a search performed inside a top-level collection will also look through all the items of its subcollections.
 
 License
 -------
@@ -51,24 +42,16 @@ You should have received a copy of the GNU General Public License along with
 this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-
-Contact
--------
-
-Current maintainers:
-
-* Roy Rosenzweig Center for History and New Media
-
-
 Copyright
 ---------
 
 * Copyright Roy Rosenzweig Center for History and New Media, 2007-2013
 * Copyright Daniel Berthereau, 2014 (improvements)
-
+* Copyright Omeka Team 2014-2026
 
 [Omeka]: https://omeka.org
 [Collection Tree]: https://github.com/Omeka/plugin-CollectionTree
+[Collection Tree user manual]: https://omeka.org/classic/docs/Plugins/CollectionTree/
 [Collection Tree issues]: https://github.com/Omeka/plugin-CollectionTree/issues
 [GNU/GPL]: https://www.gnu.org/licenses/gpl-3.0.html "GNU/GPL v3"
 [Daniel-KM]: https://github.com/Daniel-KM "Daniel Berthereau"
