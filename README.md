@@ -35,7 +35,7 @@ version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+FOR A PARTICULAR PURPOSE. Use it at your own risk. See the GNU General Public License for more
 details.
 
 You should have received a copy of the GNU General Public License along with
@@ -45,9 +45,7 @@ this program; if not, write to the Free Software Foundation, Inc.,
 Copyright
 ---------
 
-* Copyright Roy Rosenzweig Center for History and New Media, 2007-2013
-* Copyright Daniel Berthereau, 2014 (improvements)
-* Copyright Omeka Team 2014-2026
+Copyright 2016-present [Corporation for Digital Scholarship](https://digitalscholar.org), 2007-2016 [Roy Rosenzweig Center for History and New Media](https://rrchnm.org), 2014 Daniel Berthereau
 
 [Omeka]: https://omeka.org
 [Collection Tree]: https://github.com/Omeka/plugin-CollectionTree
