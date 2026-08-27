@@ -42,16 +42,10 @@ You should have received a copy of the GNU General Public License along with
 this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-Copyright
----------
-
-
-
 # Copyright
 
 Collection Tree is Copyright © 2016-present [Corporation for Digital Scholarship](https://digitalscholar.org), 
-Vienna, Virginia, USA
-2007-2016 [Roy Rosenzweig Center for History and New Media](https://rrchnm.org)
+2007-2016 [Roy Rosenzweig Center for History and New Media](https://rrchnm.org),
 2014 Daniel Berthereau
 
 The Corporation for Digital Scholarship distributes the Omeka source code under the GNU General Public License, version 3 (GPLv3). The full text of this license is given in the license file.
