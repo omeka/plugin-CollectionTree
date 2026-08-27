@@ -23,25 +23,6 @@ You can configure the plugin to adjust the display by checking the following opt
 
 **Expand search to include subcollection items by default**: This setting will mean that a search performed inside a top-level collection will also look through all the items of its subcollections.
 
-License
--------
-
-This plugin is published under [GNU/GPL].
-
-This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free Software
-Foundation; either version 3 of the License, or (at your option) any later
-version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. Use it at your own risk. See the GNU General Public License for more
-details.
-
-You should have received a copy of the GNU General Public License along with
-this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
 # Copyright
 
 Collection Tree is Copyright © 2016-present [Corporation for Digital Scholarship](https://digitalscholar.org), 
@@ -56,9 +37,9 @@ Third-party copyright in this distribution is noted where applicable.
 
 All rights not expressly granted are reserved.
 
-- Omeka: [https://omeka.org]
-- Collection Tree: [https://github.com/Omeka/plugin-CollectionTree]
-- Collection Tree user manual: [https://omeka.org/classic/docs/Plugins/CollectionTree/]
-- Collection Tree issues: [https://github.com/Omeka/plugin-CollectionTree/issues]
-- GNU/GPL: [https://www.gnu.org/licenses/gpl-3.0.html]
-- Daniel-KM: [https://github.com/Daniel-KM]
+- Omeka: https://omeka.org
+- Collection Tree repository: https://github.com/Omeka/plugin-CollectionTree
+- Collection Tree user manual: https://omeka.org/classic/docs/Plugins/CollectionTree/
+- Collection Tree issues: https://github.com/Omeka/plugin-CollectionTree/issues
+- GNU/GPL: https://www.gnu.org/licenses/gpl-3.0.html
+- Daniel-KM: https://github.com/Daniel-KM
