@@ -1,6 +1,6 @@
 <?php
 $pageTitle = __('Collection Tree');
-echo head(array('title' => $pageTitle));
+echo head(array('title' => $pageTitle, 'bodyclass' => 'collection-tree'));
 ?>
 <h1><?php echo $pageTitle; ?></h1>
 <?php if ($this->full_collection_tree): ?>
@@ -8,4 +8,4 @@ echo head(array('title' => $pageTitle));
 <?php else: ?>
 <p><?php echo __('There are no collections.'); ?></p>
 <?php endif; ?>
-<?php echo foot(); ?>
+<?php echo foot();
