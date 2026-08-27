@@ -39,7 +39,7 @@ All rights not expressly granted are reserved.
 
 - Omeka: https://omeka.org
 - Collection Tree repository: https://github.com/Omeka/plugin-CollectionTree
-- Collection Tree user manual: https://omeka.org/classic/docs/Plugins/CollectionTree/
+- Collection Tree user manual: https://omeka.org/classic/docs/Plugins/CollectionTree
 - Collection Tree issues: https://github.com/Omeka/plugin-CollectionTree/issues
 - GNU/GPL: https://www.gnu.org/licenses/gpl-3.0.html
 - Daniel-KM: https://github.com/Daniel-KM
