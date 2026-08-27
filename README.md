@@ -1,17 +1,8 @@
-Collection Tree plugin for Omeka Classic
-==================================
+# Collection Tree
 
 This plugin for Omeka Classic gives administrators the ability to create a hierarchical tree of their collections. A collection can have at most one parent collection, but a collection may have multiple child collections.
 
-Installation
-------------
-
-This plugin has no requirements or dependencies. 
-
-Uncompress files and rename plugin folder "CollectionTree". Then install it like any other Omeka plugin and follow the config instructions.
-
-Configuration
-------------
+## Configuration
 
 You can configure the plugin to adjust the display by checking the following options:
 
@@ -23,7 +14,9 @@ You can configure the plugin to adjust the display by checking the following opt
 
 **Expand search to include subcollection items by default**: This setting will mean that a search performed inside a top-level collection will also look through all the items of its subcollections.
 
-# Copyright
+See the [Collection Tree page in the Omeka Classic user manual](https://omeka.org/classic/docs/Plugins/CollectionTree) for user documentation.
+
+## Copyright
 
 Collection Tree is Copyright © 2016-present [Corporation for Digital Scholarship](https://digitalscholar.org), 
 2007-2016 [Roy Rosenzweig Center for History and New Media](https://rrchnm.org),
@@ -36,10 +29,3 @@ The Omeka name is a registered trademark of the Corporation for Digital Scholars
 Third-party copyright in this distribution is noted where applicable.
 
 All rights not expressly granted are reserved.
-
-- Omeka: https://omeka.org
-- Collection Tree repository: https://github.com/Omeka/plugin-CollectionTree
-- Collection Tree user manual: https://omeka.org/classic/docs/Plugins/CollectionTree
-- Collection Tree issues: https://github.com/Omeka/plugin-CollectionTree/issues
-- GNU/GPL: https://www.gnu.org/licenses/gpl-3.0.html
-- Daniel-KM: https://github.com/Daniel-KM
