@@ -1,6 +1,6 @@
 <?php
 $pageTitle = __('Collection Tree');
-echo head(array('title' => $pageTitle, 'bodyclass' => 'collection-tree'));
+echo head(['title' => $pageTitle, 'bodyclass' => 'collection-tree']);
 ?>
 <h1><?php echo $pageTitle; ?></h1>
 <?php if ($this->full_collection_tree): ?>

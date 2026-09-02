@@ -1,4 +1,4 @@
-<?php echo head(array('title' => __('Collection Tree'), 'bodyclass' => 'collection-tree')); ?>
+<?php echo head(['title' => __('Collection Tree'), 'bodyclass' => 'collection-tree']); ?>
 <?php if ($this->full_collection_tree): ?>
 <?php echo $this->full_collection_tree; ?>
 <?php else: ?>

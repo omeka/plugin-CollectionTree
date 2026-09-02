@@ -8,7 +8,7 @@
             echo __('This does not affect the order of the collections browse page.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_alpha_order', null,
-            array('checked' => (bool) get_option('collection_tree_alpha_order'))); ?>
+            ['checked' => (bool) get_option('collection_tree_alpha_order')]); ?>
     </div>
 </div>
 <div class="field">
@@ -20,7 +20,7 @@
             echo __('Limit the public collections browse page to root-level collections.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_browse_only_root', null,
-            array('checked' => (bool) get_option('collection_tree_browse_only_root'))); ?>
+            ['checked' => (bool) get_option('collection_tree_browse_only_root')]); ?>
     </div>
 </div>
 <div class="field">
@@ -32,7 +32,7 @@
             echo __('On public collection show pages, display items belonging to all subcollections. This is especially useful when root collections are empty and used as main categories.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_show_subcollections', null,
-            array('checked' => (bool) get_option('collection_tree_show_subcollections'))); ?>
+            ['checked' => (bool) get_option('collection_tree_show_subcollections')]); ?>
     </div>
 </div>
 <div class="field">
@@ -44,6 +44,6 @@
             echo __('When searching by collection, expand searching to all subcollections by default.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_search_descendant', null,
-            array('checked' => (bool) get_option('collection_tree_search_descendant'))); ?>
+            ['checked' => (bool) get_option('collection_tree_search_descendant')]); ?>
     </div>
 </div>

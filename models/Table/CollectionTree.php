@@ -38,7 +38,7 @@ class Table_CollectionTree extends Omeka_Db_Table
      *
      * @see self::getDescendantTree()
      */
-    protected $_cache = array();
+    protected $_cache = [];
 
     /**
      * Find parent/child relationship by collection ID.
@@ -86,7 +86,7 @@ class Table_CollectionTree extends Omeka_Db_Table
      * - padding:  The string representation of the collection depth.
      * @return array
      */
-    public function findPairsForSelectForm(array $options = array())
+    public function findPairsForSelectForm(array $options = [])
     {
         if (isset($options['padding'])) {
             $padding = $options['padding'];
@@ -94,7 +94,7 @@ class Table_CollectionTree extends Omeka_Db_Table
             $padding = '-';
         }
 
-        $pairs = array();
+        $pairs = [];
 
         foreach ($this->getRootCollections() as $rootCollectionId => $rootCollection) {
             $pairs[$rootCollectionId] = $rootCollection['name'];
@@ -134,7 +134,7 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getAncestorTree($collectionId, $getCollectionTree = false)
     {
-        $tree = array();
+        $tree = [];
 
         // Distinguish between the passed collection and its descendants.
         $parentCollectionId = $collectionId;
@@ -173,7 +173,7 @@ class Table_CollectionTree extends Omeka_Db_Table
             // Save the descendant tree as children of the parent collection and
             // remove the extraneous descendant tree.
             if (isset($tree[1])) {
-                $tree[0]['children'] = array($tree[1]);
+                $tree[0]['children'] = [$tree[1]];
                 unset($tree[1]);
             }
 
@@ -214,7 +214,7 @@ class Table_CollectionTree extends Omeka_Db_Table
             if ($children) {
                 $descendantTree[$i]['children'] = $children;
             } else {
-                $descendantTree[$i]['children'] = array();
+                $descendantTree[$i]['children'] = [];
             }
         }
 
@@ -241,7 +241,7 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getChildCollections($collectionId)
     {
-        $childCollections = array();
+        $childCollections = [];
         $collectionsChildren = $this->_getCollectionsChildren();
 
         if (isset($collectionsChildren[$collectionId])) {
@@ -261,7 +261,7 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getDescendantOrSelfCollections($collectionId)
     {
-        $collections = array();
+        $collections = [];
 
         $rootCollection = $this->getCollection($collectionId);
         if ($rootCollection) {
@@ -282,7 +282,7 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     public function getRootCollections()
     {
-        $rootCollections = array();
+        $rootCollections = [];
         $collections = $this->_getCollections();
         foreach ($collections as $collection) {
             if (!$collection['parent_collection_id']) {
@@ -325,9 +325,9 @@ class Table_CollectionTree extends Omeka_Db_Table
             // Access rights to collections are automatically managed.
             $select = $table->getSelect();
             $select->joinLeft(
-                array($alias => $this->getTableName()),
+                [$alias => $this->getTableName()],
                 "$aliasCollection.id = $alias.collection_id",
-                array('parent_collection_id'));
+                ['parent_collection_id']);
 
             $alpha = get_option('collection_tree_alpha_order');
             $collections = $this->fetchAssoc($select);
@@ -360,7 +360,7 @@ class Table_CollectionTree extends Omeka_Db_Table
         if (is_null($this->_collectionsChildren)) {
             $collections = $this->_getCollections();
 
-            $this->_collectionsChildren = array();
+            $this->_collectionsChildren = [];
             foreach ($collections as $id => $collection) {
                 if ($collection['parent_collection_id']) {
                     $parent_collection_id = $collection['parent_collection_id'];
@@ -377,6 +377,6 @@ class Table_CollectionTree extends Omeka_Db_Table
      */
     protected function _resetCache()
     {
-        $this->_cache = array();
+        $this->_cache = [];
     }
 }

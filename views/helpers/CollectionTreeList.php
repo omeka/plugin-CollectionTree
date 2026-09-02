@@ -40,7 +40,7 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
 
             // No link to current collection.
             if ($linkToCollectionShow && !isset($collection['current']) && $collectionObject) {
-                $html .= link_to_collection(null, array(), 'show', $collectionObject);
+                $html .= link_to_collection(null, [], 'show', $collectionObject);
             }
             // No link to private parent collection.
             elseif (!isset($collection['id'])) {
@@ -48,7 +48,7 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
             }
             // Link to current collection.
             else {
-                $html .= metadata($collectionObject, array('Dublin Core', 'Title'));
+                $html .= metadata($collectionObject, ['Dublin Core', 'Title']);
             }
             $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow);
             $html .= '</li>';

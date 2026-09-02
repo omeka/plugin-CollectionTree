@@ -31,9 +31,9 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
             $html .= '<li>';
             $collectionObject = $collectionTable->find($rootCollection['id']);
             if ($linkToCollectionShow) {
-                $html .= link_to_collection(null, array(), 'show', $collectionObject);
+                $html .= link_to_collection(null, [], 'show', $collectionObject);
             } else {
-                $html .= metadata($collectionObject, array('Dublin Core', 'Title'));
+                $html .= metadata($collectionObject, ['Dublin Core', 'Title']);
             }
             $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
             $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow);
