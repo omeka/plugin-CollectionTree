@@ -18,7 +18,7 @@ See the [Collection Tree page in the Omeka Classic user manual](https://omeka.or
 
 ## Copyright
 
-Collection Tree is Copyright © 2016-present [Corporation for Digital Scholarship](https://digitalscholar.org), 
+Copyright © 2016-present [Corporation for Digital Scholarship](https://digitalscholar.org),
 2007-2016 [Roy Rosenzweig Center for History and New Media](https://rrchnm.org),
 2014 Daniel Berthereau
 
