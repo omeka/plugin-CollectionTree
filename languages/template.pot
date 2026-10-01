@@ -17,25 +17,29 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: CollectionTreePlugin.php:253 CollectionTreePlugin.php:262
+#: CollectionTreePlugin.php:340
+msgid "Expand to subcollections"
+msgstr ""
+
+#: CollectionTreePlugin.php:378 CollectionTreePlugin.php:387
+#: views/admin/index/index.php:1 views/public/index/index.php:2
 #: views/shared/collections/collection-tree-list.php:1
-#: views/shared/index/index.php:1
 msgid "Collection Tree"
 msgstr ""
 
-#: CollectionTreePlugin.php:274
+#: CollectionTreePlugin.php:400
 msgid "No parent collection"
 msgstr ""
 
-#: models/CollectionTree.php:27 models/CollectionTree.php:35
+#: models/CollectionTree.php:26 models/CollectionTree.php:34
 msgid "Parent Collection"
 msgstr ""
 
-#: models/CollectionTree.php:28
+#: models/CollectionTree.php:27
 msgid "A collection cannot be a parent to itself."
 msgstr ""
 
-#: models/CollectionTree.php:36
+#: models/CollectionTree.php:35
 msgid "A collection cannot be assigned to a collection in its descendant tree."
 msgstr ""
 
@@ -49,16 +53,51 @@ msgid ""
 "collection in its descendant tree."
 msgstr ""
 
-#: views/admin/plugins/collection-tree-config-form.php:3
-msgid "Order alphabetically?"
-msgstr ""
-
-#: views/admin/plugins/collection-tree-config-form.php:6
-msgid ""
-"Order the collection tree alphabetically? This does not affect the order of "
-"the collections browse page."
-msgstr ""
-
-#: views/shared/index/index.php:5
+#: views/admin/index/index.php:5 views/public/index/index.php:9
 msgid "There are no collections."
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:3
+msgid "Order alphabetically"
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:7
+msgid "Order the collection tree alphabetically?"
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:8
+msgid "This does not affect the order of the collections browse page."
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:16
+msgid "Browse root-level collections only"
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:20
+msgid "Limit the public collections browse page to root-level collections."
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:28
+msgid "Show subcollection items"
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:32
+msgid ""
+"On public collection show pages, display items belonging to all "
+"subcollections. This is especially useful when root collections are empty "
+"and used as main categories."
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:40
+msgid "Expand search to subcollection items by default"
+msgstr ""
+
+#: views/admin/plugins/collection-tree-config-form.php:44
+msgid ""
+"When searching by collection, expand searching to all subcollections by "
+"default."
+msgstr ""
+
+#: views/helpers/CollectionTreeList.php:47
+msgid "[Unavailable]"
 msgstr ""
