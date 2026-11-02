@@ -4,8 +4,7 @@
     </div>
     <div class="inputs five columns omega">
         <p class="explanation"><?php
-            echo __('Order the collection tree alphabetically?');
-            echo __('This does not affect the order of the collections browse page.');
+            echo __('Order the collection tree alphabetically?') . ' ' . __('This does not affect the order of the collections browse page.');
         ?></p>
         <?php echo $this->formCheckbox('collection_tree_alpha_order', null,
             ['checked' => (bool) get_option('collection_tree_alpha_order')]); ?>
