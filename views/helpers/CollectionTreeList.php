@@ -22,20 +22,33 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
      * @param bool $linkToCollectionShow
      * @return string
      */
-    public function collectionTreeList($collectionTree, $linkToCollectionShow = true)
+    public function collectionTreeList($collectionTree, $linkToCollectionShow = true, $selectForm = false, $currentCollectionId = null)
     {
         if (!$collectionTree) {
             return;
         }
 
         $collectionTable = get_db()->getTable('Collection');
+        if (isset($currentCollectionId)) {
+            $collectionTreeTable = get_db()->getTable('CollectionTree');
+            $parentCollectionId = $collectionTreeTable->findByCollectionId($currentCollectionId)->parent_collection_id;
+        }
         $html = '<ul>';
         foreach ($collectionTree as $collection) {
             $html .= '<li>';
 
             $collectionObject = null;
+            if (isset($currentCollectionId)) {
+                $disabled = ($currentCollectionId == $collection['id']) ? ' disabled="true"' : '';
+            }
+            if (isset($parentCollectionId)) {
+                $selected = ($parentCollectionId == $collection['id']) ? ' checked' : '';
+            }
             if (isset($collection['id'])) {
                 $collectionObject = $collectionTable->find($collection['id']);
+            }
+            if ($selectForm) {
+                $html .= '<label><input type="radio" name="collection_tree_parent_collection_id" value="' . $collection['id'] . '"' . $disabled . $selected . '>';
             }
 
             // No link to current collection.
@@ -50,7 +63,10 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
             else {
                 $html .= metadata($collectionObject, array('Dublin Core', 'Title'));
             }
-            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow);
+            if ($selectForm) {
+                $html .= '</label>';
+            }
+            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow, $selectForm, $currentCollectionId);
             $html .= '</li>';
         }
         $html .= '</ul>';

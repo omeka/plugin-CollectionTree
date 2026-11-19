@@ -1,0 +1,11 @@
+form #collection-tree li::marker {
+    color: transparent;
+}
+
+form #collection-tree > ul {
+    padding-left: 0;
+}
+
+form #collection-tree ul ul {
+    margin: 1.5rem 0;
+}

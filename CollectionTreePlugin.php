@@ -21,6 +21,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         'uninstall',
         'initialize',
         'upgrade',
+        'admin_head',
         'config_form',
         'config',
         'before_save_collection',
@@ -144,6 +145,11 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         if (version_compare($args['old_version'], '2.2', '<')) {
             $this->_db->query("ALTER TABLE {$this->_db->CollectionTree} DROP COLUMN `name`");
         }
+    }
+
+    public function hookAdminHead($args)
+    {
+        queue_css_file('collection-tree');
     }
 
     /**
@@ -396,9 +402,6 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         $collection = $args['collection'];
         $collectionTreeTable = $this->_db->getTable('CollectionTree');
         
-        $options = $collectionTreeTable->findPairsForSelectForm();
-        $options = array('0' => __('No parent collection')) + $options;
-
         $collectionTree = $collectionTreeTable->findByCollectionId($collection->id);
         if ($collectionTree) {
             $parentCollectionId = $collectionTree->parent_collection_id;
@@ -407,7 +410,7 @@ class CollectionTreePlugin extends Omeka_Plugin_AbstractPlugin
         }
         $tabs['Parent Collection'] = get_view()->partial(
             'collections/collection-tree-parent-form.php',
-            array('options' => $options, 'parent_collection_id' => $parentCollectionId)
+        array('current_collection_id' => $collection->id)
         );
         return $tabs;
     }
