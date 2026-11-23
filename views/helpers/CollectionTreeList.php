@@ -22,7 +22,7 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
      * @param bool $linkToCollectionShow
      * @return string
      */
-    public function collectionTreeList($collectionTree, $linkToCollectionShow = true, $selectForm = false, $currentCollectionId = null)
+    public function collectionTreeList($collectionTree, $linkToCollectionShow = true, $selectForm = false, $currentCollectionId = null, $isChildNode = null)
     {
         if (!$collectionTree) {
             return;
@@ -39,16 +39,16 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
 
             $collectionObject = null;
             if (isset($currentCollectionId)) {
-                $disabled = ($currentCollectionId == $collection['id']) ? ' disabled="true"' : '';
+                $disabled = ($currentCollectionId == $collection['id'] || $isChildNode) ? ' disabled="true"' : '';
             }
             if (isset($parentCollectionId)) {
-                $selected = ($parentCollectionId == $collection['id']) ? ' checked' : '';
+                $selected = ($parentCollectionId == $collection['id']) ? 'true' : 'false';
             }
             if (isset($collection['id'])) {
                 $collectionObject = $collectionTable->find($collection['id']);
             }
             if ($selectForm) {
-                $html .= '<label><input type="radio" name="collection_tree_parent_collection_id" value="' . $collection['id'] . '"' . $disabled . $selected . '>';
+                $html .= '<button type="button" value="' . $collection['id'] . '"' . $disabled . 'aria-pressed="' . $selected . '">';
             }
 
             // No link to current collection.
@@ -64,9 +64,9 @@ class CollectionTree_View_Helper_CollectionTreeList extends Zend_View_Helper_Abs
                 $html .= metadata($collectionObject, array('Dublin Core', 'Title'));
             }
             if ($selectForm) {
-                $html .= '</label>';
+                $html .= '</button>';
             }
-            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow, $selectForm, $currentCollectionId);
+            $html .= $this->collectionTreeList($collection['children'], $linkToCollectionShow, $selectForm, $currentCollectionId, $isChildNode);
             $html .= '</li>';
         }
         $html .= '</ul>';

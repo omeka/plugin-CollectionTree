@@ -35,14 +35,15 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
         foreach ($rootCollections as $rootCollection) {
             if (isset($currentCollectionId)) {
                 $disabled = ($currentCollectionId == $rootCollection['id']) ? ' disabled="true"' : '';
+                $isChildNode = ($currentCollectionId == $rootCollection['id']);
             }
             if (isset($parentCollectionId)) {
-                $selected = ($parentCollectionId == $rootCollection['id']) ? ' checked' : '';
+                $selected = ($parentCollectionId == $rootCollection['id']) ? 'true' : 'false';
             }
             $html .= '<li>';
             $collectionObject = $collectionTable->find($rootCollection['id']);
             if ($selectForm) {
-                $html .= '<label><input type="radio" name="collection_tree_parent_collection_id" value="' . $rootCollection['id'] . '"' . $disabled . $selected . '>';
+                $html .= '<button type="button" value="' . $rootCollection['id'] . '"' . $disabled . 'aria-pressed="' . $selected . '">';
             }
             if ($linkToCollectionShow) {
                 $html .= link_to_collection(null, array(), 'show', $collectionObject);
@@ -50,13 +51,14 @@ class CollectionTree_View_Helper_CollectionTreeFullList extends Zend_View_Helper
                 $html .= metadata($collectionObject, array('Dublin Core', 'Title'));
             }
             if ($selectForm) {
-                $html .= '</label>';
+                $html .= '</button>';
             }
             $collectionTree = get_db()->getTable('CollectionTree')->getDescendantTree($rootCollection['id']);
-            $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow, $selectForm, $currentCollectionId);
+            $html .= $this->view->collectionTreeList($collectionTree, $linkToCollectionShow, $selectForm, $currentCollectionId, $isChildNode);
             $html .= '</li>';
         }
-        $html .= '</ul></div>';
+        $hiddenParentCollectionValue = isset($parentCollectionId) ? $parentCollectionId : '';
+        $html .= '</ul>' . $this->view->formHidden('collection_tree_parent_collection_id', $hiddenParentCollectionValue) . '</div>';
         return $html;
     }
 }

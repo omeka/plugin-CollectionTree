@@ -9,3 +9,20 @@
         </li>
     </div>
 </div>
+
+<script>
+    jQuery(document).ready(function () {
+        const hiddenParentCollectionValue = jQuery('#collection_tree_parent_collection_id');
+        jQuery(document).on('click', '#collection-tree button', function () {
+            let activeButton = jQuery(this);
+            if (activeButton.attr('aria-pressed') == 'false') {
+                jQuery('#collection-tree button[aria-pressed="true"]').attr('aria-pressed', 'false');
+                activeButton.attr('aria-pressed', 'true');
+                hiddenParentCollectionValue.val(activeButton.val());
+            } else {
+                activeButton.attr('aria-pressed', 'false');
+                hiddenParentCollectionValue.val('0');
+            }
+        });
+    });
+</script>
